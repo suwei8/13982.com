@@ -1,0 +1,34 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const cases = await getCollection('cases');
+  return cases.map((c) => ({
+    params: { slug: c.id },
+    props: { caseData: c },
+  }));
+}
+
+const { caseData } = Astro.props;
+const { Content } = await render(caseData);
+---
+
+<Base title={caseData.data.title} description={caseData.data.description}>
+  <section class="section" style="padding-top: calc(var(--nav-h) + 40px);">
+    <div class="container" style="max-width: 800px;">
+      <a href="/cases/" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 24px;">← 返回案例列表</a>
+      <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 12px;">{caseData.data.title}</h1>
+      <p style="color: var(--text-light); margin-bottom: 16px;">{caseData.data.description}</p>
+      <div style="margin-bottom: 32px; display: flex; gap: 8px; flex-wrap: wrap;">
+        {caseData.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+        <span style="font-size: 0.85rem; color: var(--text-muted); align-self: center;">
+          {caseData.data.date.toLocaleDateString('zh-CN')}
+        </span>
+      </div>
+      <article style="line-height: 1.9; color: var(--text-light);">
+        <Content />
+      </article>
+    </div>
+  </section>
+</Base>

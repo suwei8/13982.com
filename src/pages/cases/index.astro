@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const cases = (await getCollection('cases')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<Base title="客户案例" activeNav="cases">
+  <section class="page-header">
+    <div class="container">
+      <h1>客户案例</h1>
+      <p>我们为众多企业提供了专业的互联网技术服务</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-3">
+        {cases.map((c) => (
+          <a href={`/cases/${c.id}/`} class="card" style="text-decoration: none;">
+            <div class="card-body">
+              <h3>{c.data.title}</h3>
+              <p>{c.data.description}</p>
+              <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  {c.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+                </div>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">
+                  {c.data.date.toLocaleDateString('zh-CN')}
+                </span>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

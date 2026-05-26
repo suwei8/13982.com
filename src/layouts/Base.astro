@@ -1,0 +1,336 @@
+---
+import site from '../content/site.json';
+
+interface Props {
+  title: string;
+  description?: string;
+  activeNav?: string;
+}
+
+const { title, description = site.description, activeNav = '' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} | {site.name}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style is:global>
+      :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-light: #dbeafe;
+        --accent: #0ea5e9;
+        --text: #1e293b;
+        --text-light: #64748b;
+        --text-muted: #94a3b8;
+        --bg: #ffffff;
+        --bg-alt: #f8fafc;
+        --bg-dark: #0f172a;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+        --shadow-xl: 0 20px 50px rgba(0,0,0,0.12);
+        --max-w: 1200px;
+        --nav-h: 72px;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--text);
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        background: var(--bg);
+      }
+
+      a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
+      a:hover { color: var(--primary-dark); }
+      img { max-width: 100%; height: auto; display: block; }
+
+      .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+
+      /* ===== NAVIGATION ===== */
+      .nav {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+        height: var(--nav-h);
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        transition: box-shadow 0.3s;
+      }
+      .nav.scrolled { box-shadow: var(--shadow); }
+      .nav-inner {
+        max-width: var(--max-w); margin: 0 auto; padding: 0 24px;
+        display: flex; align-items: center; justify-content: space-between;
+        height: 100%;
+      }
+      .nav-logo {
+        font-size: 1.35rem; font-weight: 700; color: var(--text);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .nav-logo:hover { color: var(--text); text-decoration: none; }
+      .nav-logo .dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
+      .nav-links { list-style: none; display: flex; gap: 8px; }
+      .nav-links a {
+        display: block; padding: 8px 16px; border-radius: 8px;
+        color: var(--text-light); font-size: 0.95rem; font-weight: 500;
+        transition: all 0.2s;
+      }
+      .nav-links a:hover { color: var(--primary); background: var(--primary-light); text-decoration: none; }
+      .nav-links a.active { color: var(--primary); background: var(--primary-light); }
+      .nav-cta {
+        padding: 8px 20px !important; background: var(--primary) !important;
+        color: #fff !important; border-radius: 8px !important;
+      }
+      .nav-cta:hover { background: var(--primary-dark) !important; }
+
+      /* Mobile nav */
+      .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+      .nav-toggle span { display: block; width: 20px; height: 2px; background: var(--text); margin: 5px 0; transition: 0.3s; }
+
+      @media (max-width: 768px) {
+        .nav-toggle { display: block; }
+        .nav-links {
+          display: none; position: absolute; top: var(--nav-h); left: 0; right: 0;
+          background: #fff; flex-direction: column; padding: 16px 24px;
+          border-bottom: 1px solid var(--border); box-shadow: var(--shadow-lg);
+        }
+        .nav-links.open { display: flex; }
+      }
+
+      /* ===== HERO ===== */
+      .hero {
+        padding: calc(var(--nav-h) + 80px) 0 80px;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%);
+        position: relative; overflow: hidden;
+      }
+      .hero::before {
+        content: ''; position: absolute; top: -50%; right: -20%;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+      }
+      .hero-content { position: relative; z-index: 1; }
+      .hero-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px; background: rgba(37,99,235,0.1);
+        border-radius: 999px; font-size: 0.85rem; color: var(--primary);
+        margin-bottom: 24px; font-weight: 500;
+      }
+      .hero h1 {
+        font-size: clamp(2rem, 5vw, 3.2rem);
+        font-weight: 700; line-height: 1.25;
+        margin-bottom: 20px; color: var(--text);
+      }
+      .hero h1 .highlight { color: var(--primary); }
+      .hero p {
+        font-size: 1.15rem; color: var(--text-light);
+        max-width: 560px; margin-bottom: 36px;
+      }
+      .hero-stats {
+        display: flex; gap: 48px; margin-top: 48px;
+        padding-top: 32px; border-top: 1px solid rgba(37,99,235,0.15);
+      }
+      .hero-stat .num { font-size: 2.2rem; font-weight: 700; color: var(--primary); }
+      .hero-stat .label { font-size: 0.9rem; color: var(--text-muted); margin-top: 2px; }
+      .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+
+      /* ===== BUTTONS ===== */
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 12px 28px; border-radius: 10px; font-size: 0.95rem;
+        font-weight: 500; border: none; cursor: pointer;
+        transition: all 0.2s; text-decoration: none;
+      }
+      .btn-primary { background: var(--primary); color: #fff; }
+      .btn-primary:hover { background: var(--primary-dark); color: #fff; transform: translateY(-1px); box-shadow: var(--shadow-lg); text-decoration: none; }
+      .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+      .btn-outline:hover { background: var(--primary); color: #fff; text-decoration: none; }
+
+      /* ===== SECTIONS ===== */
+      .section { padding: 80px 0; }
+      .section-alt { background: var(--bg-alt); }
+      .section-header { text-align: center; margin-bottom: 48px; }
+      .section-header .overline {
+        display: inline-block; font-size: 0.8rem; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 2px;
+        color: var(--primary); margin-bottom: 12px;
+      }
+      .section-header h2 {
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        font-weight: 700; margin-bottom: 16px;
+      }
+      .section-header p { color: var(--text-light); max-width: 600px; margin: 0 auto; }
+
+      /* ===== CARDS ===== */
+      .card {
+        background: #fff; border: 1px solid var(--border);
+        border-radius: var(--radius); overflow: hidden;
+        transition: all 0.3s;
+      }
+      .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); border-color: transparent; }
+      .card-body { padding: 24px; }
+      .card-body h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+      .card-body p { color: var(--text-light); font-size: 0.9rem; line-height: 1.6; }
+
+      /* ===== GRID ===== */
+      .grid { display: grid; gap: 24px; }
+      .grid-2 { grid-template-columns: repeat(2, 1fr); }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+      .grid-4 { grid-template-columns: repeat(4, 1fr); }
+      @media (max-width: 1024px) { .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 640px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+      /* ===== TAGS ===== */
+      .tag {
+        display: inline-block; padding: 4px 12px;
+        background: var(--primary-light); color: var(--primary);
+        border-radius: 999px; font-size: 0.8rem; font-weight: 500;
+      }
+
+      /* ===== SERVICE ICON ===== */
+      .service-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        background: var(--primary-light); color: var(--primary);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; margin-bottom: 16px;
+      }
+
+      /* ===== FOOTER ===== */
+      .footer {
+        background: var(--bg-dark); color: #94a3b8; padding: 60px 0 32px;
+      }
+      .footer a { color: #cbd5e1; }
+      .footer a:hover { color: #fff; }
+      .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+      @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; } }
+      .footer-brand { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+      .footer-desc { font-size: 0.9rem; line-height: 1.7; }
+      .footer h4 { color: #fff; font-size: 0.95rem; margin-bottom: 16px; }
+      .footer ul { list-style: none; }
+      .footer li { margin-bottom: 8px; }
+      .footer li a { font-size: 0.9rem; }
+      .footer-bottom {
+        border-top: 1px solid #1e293b; padding-top: 24px;
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 0.85rem; flex-wrap: wrap; gap: 12px;
+      }
+
+      /* ===== CONTACT CARDS ===== */
+      .contact-card {
+        background: #fff; border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 28px; text-align: center;
+        transition: all 0.3s;
+      }
+      .contact-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+      .contact-icon {
+        width: 52px; height: 52px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 16px; font-size: 1.4rem;
+      }
+      .contact-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+      .contact-card p { color: var(--text-light); font-size: 0.9rem; }
+
+      /* ===== ABOUT FEATURES ===== */
+      .feature { display: flex; gap: 16px; padding: 20px 0; }
+      .feature-icon {
+        width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+        background: var(--primary-light); color: var(--primary);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+      }
+      .feature h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+      .feature p { color: var(--text-light); font-size: 0.9rem; }
+
+      /* ===== PAGE HEADER ===== */
+      .page-header {
+        padding: calc(var(--nav-h) + 48px) 0 48px;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        text-align: center;
+      }
+      .page-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+      .page-header p { color: var(--text-light); }
+    </style>
+  </head>
+  <body>
+    <nav class="nav" id="nav">
+      <div class="nav-inner">
+        <a class="nav-logo" href="/"><span class="dot"></span>{site.name}</a>
+        <button class="nav-toggle" id="navToggle" aria-label="菜单">
+          <span></span><span></span><span></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="/" class={activeNav === 'home' ? 'active' : ''}>首页</a></li>
+          <li><a href="/about/" class={activeNav === 'about' ? 'active' : ''}>关于我们</a></li>
+          <li><a href="/services/" class={activeNav === 'services' ? 'active' : ''}>产品服务</a></li>
+          <li><a href="/cases/" class={activeNav === 'cases' ? 'active' : ''}>客户案例</a></li>
+          <li><a href="/contact/" class={activeNav === 'contact' ? 'active' : ''}>联系我们</a></li>
+          <li><a href="/contact/" class="nav-cta">免费咨询</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <slot />
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <div class="footer-brand">{site.name}</div>
+            <p class="footer-desc">{site.description}</p>
+            <p style="margin-top: 16px; font-size: 0.85rem;">{site.address_full}</p>
+          </div>
+          <div>
+            <h4>产品服务</h4>
+            <ul>
+              <li><a href="/services/">网站建设</a></li>
+              <li><a href="/services/">小程序开发</a></li>
+              <li><a href="/services/">APP开发</a></li>
+              <li><a href="/services/">网络推广</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>快速链接</h4>
+            <ul>
+              <li><a href="/about/">关于我们</a></li>
+              <li><a href="/cases/">客户案例</a></li>
+              <li><a href="/contact/">联系我们</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>联系方式</h4>
+            <ul>
+              <li>{site.phone_400}</li>
+              <li>微信: {site.wechat}</li>
+              <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>&copy; {new Date().getFullYear()} {site.company}</span>
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="nofollow">{site.icp}</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Sticky nav shadow
+      const nav = document.getElementById('nav');
+      window.addEventListener('scroll', () => {
+        nav?.classList.toggle('scrolled', window.scrollY > 10);
+      });
+      // Mobile toggle
+      document.getElementById('navToggle')?.addEventListener('click', () => {
+        document.getElementById('navLinks')?.classList.toggle('open');
+      });
+    </script>
+  </body>
+</html>

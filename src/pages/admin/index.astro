@@ -1,0 +1,509 @@
+---
+// Admin SPA shell - no Astro layout needed
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>管理后台 | 滇码科技</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; }
+    </style>
+  </head>
+  <body>
+    <div id="admin-app"></div>
+    <script>
+      // Minimal vanilla JS admin panel - no build dependency
+      // This proves the GitHub API integration works
+
+      const GITHUB_API = 'https://api.github.com';
+      let token = localStorage.getItem('gh_token') || '';
+      let owner = localStorage.getItem('gh_owner') || '';
+      let repo = localStorage.getItem('gh_repo') || '';
+
+      function headers() {
+        return {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        };
+      }
+
+      // Encode string to base64 (UTF-8 safe)
+      function encodeBase64(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+      }
+
+      // Decode base64 to string (UTF-8 safe)
+      function decodeBase64(str) {
+        return decodeURIComponent(escape(atob(str)));
+      }
+
+      async function api(method, path, body) {
+        const opts = { method, headers: headers() };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(`${GITHUB_API}${path}`, opts);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `GitHub API error: ${res.status}`);
+        }
+        return res.status === 204 ? null : res.json();
+      }
+
+      // List files in a directory
+      async function listFiles(dirPath) {
+        try {
+          return await api('GET', `/repos/${owner}/${repo}/contents/${dirPath}`);
+        } catch (e) {
+          if (e.message.includes('Not Found')) return [];
+          throw e;
+        }
+      }
+
+      // Get file content + SHA
+      async function getFile(filePath) {
+        const data = await api('GET', `/repos/${owner}/${repo}/contents/${filePath}`);
+        return {
+          sha: data.sha,
+          content: decodeBase64(data.content),
+        };
+      }
+
+      // Create or update file
+      async function saveFile(filePath, content, sha) {
+        const body = {
+          message: `admin: update ${filePath}`,
+          content: encodeBase64(content),
+        };
+        if (sha) body.sha = sha;
+        return api('PUT', `/repos/${owner}/${repo}/contents/${filePath}`, body);
+      }
+
+      // Delete file
+      async function deleteFile(filePath, sha) {
+        return api('DELETE', `/repos/${owner}/${repo}/contents/${filePath}`, {
+          message: `admin: delete ${filePath}`,
+          sha: sha,
+        });
+      }
+
+      // Upload image
+      async function uploadImage(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            const ext = file.name.split('.').pop();
+            const path = `public/images/${Date.now()}.${ext}`;
+            try {
+              const result = await api('PUT', `/repos/${owner}/${repo}/contents/${path}`, {
+                message: `admin: upload image ${file.name}`,
+                content: base64,
+              });
+              resolve({ path, url: result.content.download_url });
+            } catch (e) {
+              reject(e);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Parse frontmatter from markdown
+      function parseFrontmatter(md) {
+        const match = md.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+        if (!match) return { data: {}, content: md };
+        const data = {};
+        match[1].split('\n').forEach(line => {
+          const idx = line.indexOf(':');
+          if (idx === -1) return;
+          const key = line.slice(0, idx).trim();
+          let val = line.slice(idx + 1).trim();
+          if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+          if (val.startsWith('[') && val.endsWith(']')) {
+            val = val.slice(1, -1).split(',').map(s => s.trim().replace(/"/g, ''));
+          }
+          data[key] = val;
+        });
+        return { data, content: match[2] };
+      }
+
+      // Build frontmatter string
+      function buildFrontmatter(data, content) {
+        let fm = '---\n';
+        for (const [key, val] of Object.entries(data)) {
+          if (Array.isArray(val)) {
+            fm += `${key}: [${val.map(v => `"${v}"`).join(', ')}]\n`;
+          } else if (typeof val === 'string') {
+            fm += `${key}: "${val}"\n`;
+          } else {
+            fm += `${key}: ${val}\n`;
+          }
+        }
+        fm += '---\n\n';
+        return fm + content;
+      }
+
+      // ============ RENDER ============
+
+      function renderApp() {
+        const app = document.getElementById('admin-app');
+
+        if (!token || !owner || !repo) {
+          app.innerHTML = `
+            <div style="max-width: 400px; margin: 100px auto; background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+              <h2 style="margin-bottom: 1.5rem;">管理后台登录</h2>
+              <div style="margin-bottom: 1rem;">
+                <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">GitHub Token</label>
+                <input id="inp-token" type="password" placeholder="ghp_xxxx" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;" />
+              </div>
+              <div style="margin-bottom: 1rem;">
+                <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">仓库所有者</label>
+                <input id="inp-owner" placeholder="suwei8" value="suwei8" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;" />
+              </div>
+              <div style="margin-bottom: 1.5rem;">
+                <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">仓库名称</label>
+                <input id="inp-repo" placeholder="13982.com" value="13982.com" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;" />
+              </div>
+              <button onclick="doLogin()" style="width:100%; padding: 10px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem;">登录</button>
+              <p id="login-msg" style="color: #ef4444; margin-top: 0.5rem; font-size: 0.85rem;"></p>
+            </div>
+          `;
+          return;
+        }
+
+        renderDashboard();
+      }
+
+      window.doLogin = async function() {
+        token = document.getElementById('inp-token').value.trim();
+        owner = document.getElementById('inp-owner').value.trim();
+        repo = document.getElementById('inp-repo').value.trim();
+
+        if (!token || !owner || !repo) {
+          document.getElementById('login-msg').textContent = '请填写所有字段';
+          return;
+        }
+
+        try {
+          await api('GET', `/repos/${owner}/${repo}`);
+          localStorage.setItem('gh_token', token);
+          localStorage.setItem('gh_owner', owner);
+          localStorage.setItem('gh_repo', repo);
+          renderApp();
+        } catch (e) {
+          document.getElementById('login-msg').textContent = '认证失败: ' + e.message;
+        }
+      };
+
+      async function renderDashboard() {
+        const app = document.getElementById('admin-app');
+        app.innerHTML = `
+          <div style="display: flex; min-height: 100vh;">
+            <nav style="width: 220px; background: #1f2937; color: #fff; padding: 1.5rem 0;">
+              <div style="padding: 0 1rem; margin-bottom: 2rem;">
+                <strong style="font-size: 1.1rem;">滇码科技</strong>
+                <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 2px;">管理后台</div>
+              </div>
+              <div style="padding: 0 0.5rem;">
+                <a href="#" onclick="showSection('cases'); return false;" id="nav-cases" style="display: block; padding: 8px 1rem; color: #fff; border-radius: 6px; background: #2563eb;">客户案例</a>
+                <a href="#" onclick="showSection('services'); return false;" id="nav-services" style="display: block; padding: 8px 1rem; color: #d1d5db; margin-top: 4px;">产品服务</a>
+              </div>
+              <div style="position: absolute; bottom: 1rem; padding: 0 1rem;">
+                <a href="/" style="color: #9ca3af; font-size: 0.85rem;">查看网站</a>
+                <br/>
+                <a href="#" onclick="doLogout(); return false;" style="color: #ef4444; font-size: 0.85rem;">退出登录</a>
+              </div>
+            </nav>
+            <main style="flex: 1; padding: 2rem;" id="main-content">
+              <p>加载中...</p>
+            </main>
+          </div>
+        `;
+        showSection('cases');
+      }
+
+      window.doLogout = function() {
+        localStorage.removeItem('gh_token');
+        localStorage.removeItem('gh_owner');
+        localStorage.removeItem('gh_repo');
+        token = ''; owner = ''; repo = '';
+        renderApp();
+      };
+
+      window.showSection = async function(section) {
+        document.querySelectorAll('[id^="nav-"]').forEach(el => {
+          el.style.background = 'none';
+          el.style.color = '#d1d5db';
+        });
+        const navEl = document.getElementById(`nav-${section}`);
+        if (navEl) { navEl.style.background = '#2563eb'; navEl.style.color = '#fff'; }
+
+        if (section === 'cases') await renderCases();
+        if (section === 'services') await renderServices();
+      };
+
+      // ============ CASES ============
+
+      async function renderCases() {
+        const main = document.getElementById('main-content');
+        main.innerHTML = '<p>加载案例中...</p>';
+
+        try {
+          const files = await listFiles('src/content/cases');
+          const cases = [];
+
+          for (const f of files) {
+            if (!f.name.endsWith('.md')) continue;
+            const { sha, content } = await getFile(f.path);
+            const { data } = parseFrontmatter(content);
+            cases.push({ ...data, file: f.path, sha, filename: f.name });
+          }
+
+          main.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+              <h2>客户案例 (${cases.length})</h2>
+              <button onclick="editCase()" style="padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer;">+ 新增案例</button>
+            </div>
+            <div id="cases-list">
+              ${cases.map(c => `
+                <div style="background: #fff; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e5e7eb;">
+                  <div>
+                    <strong>${c.title || '(无标题)'}</strong>
+                    <div style="font-size: 0.85rem; color: #6b7280; margin-top: 2px;">${c.description || ''}</div>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button onclick="editCase('${c.file}')" style="padding: 4px 12px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; background: #fff;">编辑</button>
+                    <button onclick="removeCase('${c.file}', '${c.sha}')" style="padding: 4px 12px; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; background: #fff; color: #ef4444;">删除</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } catch (e) {
+          main.innerHTML = `<p style="color: #ef4444;">加载失败: ${e.message}</p>`;
+        }
+      }
+
+      window.editCase = async function(filePath) {
+        const main = document.getElementById('main-content');
+        let title = '', description = '', tags = '', content = '', sha = '';
+
+        if (filePath) {
+          try {
+            const file = await getFile(filePath);
+            sha = file.sha;
+            const { data, content: body } = parseFrontmatter(file.content);
+            title = data.title || '';
+            description = data.description || '';
+            tags = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
+            content = body;
+          } catch (e) {
+            alert('加载失败: ' + e.message);
+            return;
+          }
+        }
+
+        main.innerHTML = `
+          <h2 style="margin-bottom: 1.5rem;">${filePath ? '编辑案例' : '新增案例'}</h2>
+          <div style="max-width: 700px;">
+            <div style="margin-bottom: 1rem;">
+              <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">标题</label>
+              <input id="case-title" value="${title}" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">描述</label>
+              <textarea id="case-desc" rows="3" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical;">${description}</textarea>
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">标签 (逗号分隔)</label>
+              <input id="case-tags" value="${tags}" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;" />
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">正文内容 (Markdown)</label>
+              <textarea id="case-content" rows="10" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: monospace; resize: vertical;">${content}</textarea>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="saveCase('${filePath}', '${sha}')" style="padding: 8px 20px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer;">保存</button>
+              <button onclick="showSection('cases')" style="padding: 8px 20px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; background: #fff;">取消</button>
+            </div>
+            <p id="case-msg" style="margin-top: 0.5rem; font-size: 0.85rem;"></p>
+          </div>
+        `;
+      };
+
+      window.saveCase = async function(filePath, sha) {
+        const msg = document.getElementById('case-msg');
+        const title = document.getElementById('case-title').value.trim();
+        const desc = document.getElementById('case-desc').value.trim();
+        const tags = document.getElementById('case-tags').value.split(',').map(s => s.trim()).filter(Boolean);
+        const body = document.getElementById('case-content').value;
+
+        if (!title) { msg.textContent = '请填写标题'; msg.style.color = '#ef4444'; return; }
+
+        const slug = title.toLowerCase().replace(/[^a-z0-9一-鿿]+/g, '-').replace(/^-|-$/g, '');
+        const safeSlug = slug || `case-${Date.now()}`;
+        const newPath = filePath || `src/content/cases/${safeSlug}.md`;
+
+        const md = buildFrontmatter({
+          title,
+          description: desc,
+          thumbnail: '',
+          tags,
+          date: new Date().toISOString().split('T')[0],
+        }, body);
+
+        try {
+          msg.textContent = '保存中...'; msg.style.color = '#6b7280';
+          await saveFile(newPath, md, sha || undefined);
+          msg.textContent = '保存成功！EdgeOne Pages 将自动重新构建。'; msg.style.color = '#22c55e';
+          setTimeout(() => showSection('cases'), 1500);
+        } catch (e) {
+          msg.textContent = '保存失败: ' + e.message; msg.style.color = '#ef4444';
+        }
+      };
+
+      window.removeCase = async function(filePath, sha) {
+        if (!confirm('确定删除这个案例吗？')) return;
+        try {
+          await deleteFile(filePath, sha);
+          renderCases();
+        } catch (e) {
+          alert('删除失败: ' + e.message);
+        }
+      };
+
+      // ============ SERVICES ============
+
+      async function renderServices() {
+        const main = document.getElementById('main-content');
+        main.innerHTML = '<p>加载服务中...</p>';
+
+        try {
+          const files = await listFiles('src/content/services');
+          const services = [];
+
+          for (const f of files) {
+            if (!f.name.endsWith('.md')) continue;
+            const { sha, content } = await getFile(f.path);
+            const { data } = parseFrontmatter(content);
+            services.push({ ...data, file: f.path, sha, filename: f.name });
+          }
+
+          services.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+          main.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+              <h2>产品服务 (${services.length})</h2>
+              <button onclick="editService()" style="padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer;">+ 新增服务</button>
+            </div>
+            <div id="services-list">
+              ${services.map(s => `
+                <div style="background: #fff; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e5e7eb;">
+                  <div>
+                    <strong>${s.title || '(无标题)'}</strong>
+                    <div style="font-size: 0.85rem; color: #6b7280; margin-top: 2px;">${s.description || ''}</div>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button onclick="editService('${s.file}')" style="padding: 4px 12px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; background: #fff;">编辑</button>
+                    <button onclick="removeService('${s.file}', '${s.sha}')" style="padding: 4px 12px; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; background: #fff; color: #ef4444;">删除</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } catch (e) {
+          main.innerHTML = `<p style="color: #ef4444;">加载失败: ${e.message}</p>`;
+        }
+      }
+
+      window.editService = async function(filePath) {
+        const main = document.getElementById('main-content');
+        let title = '', description = '', order = '0', content = '', sha = '';
+
+        if (filePath) {
+          try {
+            const file = await getFile(filePath);
+            sha = file.sha;
+            const { data, content: body } = parseFrontmatter(file.content);
+            title = data.title || '';
+            description = data.description || '';
+            order = String(data.order || '0');
+            content = body;
+          } catch (e) {
+            alert('加载失败: ' + e.message);
+            return;
+          }
+        }
+
+        main.innerHTML = `
+          <h2 style="margin-bottom: 1.5rem;">${filePath ? '编辑服务' : '新增服务'}</h2>
+          <div style="max-width: 700px;">
+            <div style="margin-bottom: 1rem;">
+              <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">标题</label>
+              <input id="svc-title" value="${title}" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">描述</label>
+              <textarea id="svc-desc" rows="3" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical;">${description}</textarea>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #6b7280;">正文内容 (Markdown)</label>
+              <textarea id="svc-content" rows="10" style="width:100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: monospace; resize: vertical;">${content}</textarea>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="saveService('${filePath}', '${sha}')" style="padding: 8px 20px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer;">保存</button>
+              <button onclick="showSection('services')" style="padding: 8px 20px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; background: #fff;">取消</button>
+            </div>
+            <p id="svc-msg" style="margin-top: 0.5rem; font-size: 0.85rem;"></p>
+          </div>
+        `;
+      };
+
+      window.saveService = async function(filePath, sha) {
+        const msg = document.getElementById('svc-msg');
+        const title = document.getElementById('svc-title').value.trim();
+        const desc = document.getElementById('svc-desc').value.trim();
+        const body = document.getElementById('svc-content').value;
+
+        if (!title) { msg.textContent = '请填写标题'; msg.style.color = '#ef4444'; return; }
+
+        const slug = title.toLowerCase().replace(/[^a-z0-9一-鿿]+/g, '-').replace(/^-|-$/g, '');
+        const safeSlug = slug || `service-${Date.now()}`;
+        const newPath = filePath || `src/content/services/${safeSlug}.md`;
+
+        const md = buildFrontmatter({
+          title,
+          description: desc,
+          icon: '',
+          order: 99,
+        }, body);
+
+        try {
+          msg.textContent = '保存中...'; msg.style.color = '#6b7280';
+          await saveFile(newPath, md, sha || undefined);
+          msg.textContent = '保存成功！'; msg.style.color = '#22c55e';
+          setTimeout(() => showSection('services'), 1500);
+        } catch (e) {
+          msg.textContent = '保存失败: ' + e.message; msg.style.color = '#ef4444';
+        }
+      };
+
+      window.removeService = async function(filePath, sha) {
+        if (!confirm('确定删除这个服务吗？')) return;
+        try {
+          await deleteFile(filePath, sha);
+          renderServices();
+        } catch (e) {
+          alert('删除失败: ' + e.message);
+        }
+      };
+
+      // Boot
+      renderApp();
+    </script>
+  </body>
+</html>

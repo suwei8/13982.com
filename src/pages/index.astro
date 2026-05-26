@@ -1,0 +1,119 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import site from '../content/site.json';
+
+const cases = (await getCollection('cases')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const services = (await getCollection('services')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const serviceIcons: Record<string, string> = {
+  '网站建设': '🌐', '小程序开发': '📱', '公众号开发': '💬',
+  'APP开发': '📲', '网络推广': '📈', '电商服务': '🛒',
+  '直播服务': '📡', '微信抽奖': '🎁', '400电话': '📞',
+  '商标注册': '™️', 'OA系统定制': '⚙️', '商城网站': '🏪',
+  '网站空间': '☁️', '域名注册': '🔗', '企业邮箱': '📧',
+  '企业画册': '📖', 'Logo设计': '🎨', '视频制作': '🎬',
+  '运维服务': '🔧',
+};
+---
+
+<Base title="首页" activeNav="home">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">云南红河 · 7年专注互联网技术服务</div>
+        <h1>
+          互联网+选<span class="highlight">滇码科技</span>
+        </h1>
+        <p>{site.description}</p>
+        <div class="hero-buttons">
+          <a href="/contact/" class="btn btn-primary">免费咨询 →</a>
+          <a href="/cases/" class="btn btn-outline">查看案例</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="num">{site.stats.years}</div>
+            <div class="label">本土持久服务</div>
+          </div>
+          <div class="hero-stat">
+            <div class="num">{site.stats.clients}</div>
+            <div class="label">企业建站客户</div>
+          </div>
+          <div class="hero-stat">
+            <div class="num">{site.stats.longterm}</div>
+            <div class="label">长期托管服务</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-header">
+        <div class="overline">产品服务</div>
+        <h2>一站式互联网技术服务</h2>
+        <p>结合创意、设计、营销、研发等多维度，为您提供更精准的方案</p>
+      </div>
+      <div class="grid grid-4">
+        {services.slice(0, 8).map((s) => (
+          <div class="card">
+            <div class="card-body">
+              <div class="service-icon">{serviceIcons[s.data.title] || '⚡'}</div>
+              <h3>{s.data.title}</h3>
+              <p>{s.data.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="/services/" class="btn btn-outline">查看全部服务 →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cases -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="overline">客户案例</div>
+        <h2>用案例说话</h2>
+        <p>专注网页设计、小程序开发、APP开发，助力企业拥抱互联网+</p>
+      </div>
+      <div class="grid grid-3">
+        {cases.map((c) => (
+          <a href={`/cases/${c.id}/`} class="card" style="text-decoration: none;">
+            <div class="card-body">
+              <h3>{c.data.title}</h3>
+              <p>{c.data.description}</p>
+              <div style="margin-top: 12px;">
+                {c.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="/cases/" class="btn btn-outline">查看更多案例 →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" style="background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%); color: #fff; text-align: center;">
+    <div class="container">
+      <h2 style="font-size: 2rem; margin-bottom: 16px; color: #fff;">准备好开始了吗？</h2>
+      <p style="font-size: 1.1rem; opacity: 0.85; margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto;">一个微信、一个电话，开启一个项目的合作</p>
+      <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="/contact/" class="btn" style="background: #fff; color: var(--primary);">联系我们</a>
+        <a href={`tel:${site.phone_mobile}`} class="btn" style="border: 1.5px solid rgba(255,255,255,0.5); color: #fff;">拨打电话</a>
+      </div>
+    </div>
+  </section>
+</Base>

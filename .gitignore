@@ -6,3 +6,8 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+
+# Credentials
+public/admin-config.js
+HANDOFF_CREDENTIALS.md
+scripts/export-mysql.py

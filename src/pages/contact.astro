@@ -4,44 +4,47 @@ import site from '../content/site.json';
 ---
 
 <Base title="联系我们" activeNav="contact">
-  <section class="page-header">
-    <div class="container">
-      <h1>联系我们</h1>
-      <p>一个微信、一个电话，开启一个项目的合作</p>
+  <!-- Page Header -->
+  <section class="pt-[calc(72px+48px)] pb-12 bg-gradient-to-br from-blue-50 to-sky-50 text-center">
+    <div class="max-w-7xl mx-auto px-6">
+      <h1 class="text-3xl font-bold mb-2">联系我们</h1>
+      <p class="text-slate-500">一个微信、一个电话，开启一个项目的合作</p>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="grid grid-4" style="margin-bottom: 48px;">
+  <!-- Contact Cards -->
+  <section class="py-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <div class="contact-card">
-          <div class="contact-icon" style="background: #dbeafe; color: #2563eb;">📍</div>
-          <h3>公司地址</h3>
-          <p>{site.address_full}</p>
+          <div class="contact-icon bg-blue-100 text-primary">📍</div>
+          <h3 class="font-semibold text-sm mb-2">公司地址</h3>
+          <p class="text-sm text-slate-500">{site.address_full}</p>
         </div>
         <div class="contact-card">
-          <div class="contact-icon" style="background: #dcfce7; color: #16a34a;">📞</div>
-          <h3>联系电话</h3>
-          <p>网站建设: {site.phone_mobile}</p>
-          <p>网站优化: {site.phone_400}</p>
+          <div class="contact-icon bg-green-100 text-green-600">📞</div>
+          <h3 class="font-semibold text-sm mb-2">联系电话</h3>
+          <p class="text-sm text-slate-500">网站建设: {site.phone_mobile}</p>
+          <p class="text-sm text-slate-500">网站优化: {site.phone_400}</p>
         </div>
         <div class="contact-card">
-          <div class="contact-icon" style="background: #fef3c7; color: #d97706;">💬</div>
-          <h3>微信联系</h3>
-          <p>微信号: {site.wechat}</p>
-          <p>扫码添加好友</p>
+          <div class="contact-icon bg-amber-100 text-amber-600">💬</div>
+          <h3 class="font-semibold text-sm mb-2">微信联系</h3>
+          <p class="text-sm text-slate-500">微信号: {site.wechat}</p>
+          <p class="text-sm text-slate-500">扫码添加好友</p>
         </div>
         <div class="contact-card">
-          <div class="contact-icon" style="background: #fce7f3; color: #db2777;">📧</div>
-          <h3>电子邮箱</h3>
-          <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+          <div class="contact-icon bg-pink-100 text-pink-600">📧</div>
+          <h3 class="font-semibold text-sm mb-2">电子邮箱</h3>
+          <p class="text-sm text-slate-500"><a href={`mailto:${site.email}`} class="text-primary hover:underline">{site.email}</a></p>
         </div>
       </div>
 
-      <div style="background: var(--bg-alt); border-radius: var(--radius); padding: 40px; text-align: center;">
-        <h2 style="font-size: 1.5rem; margin-bottom: 12px;">工作时间</h2>
-        <p style="color: var(--text-light); font-size: 1.1rem;">周一至周五 08:00 - 18:00</p>
-        <p style="color: var(--text-muted); margin-top: 8px;">州内免费上门服务</p>
+      <!-- Work hours -->
+      <div class="bg-slate-50 rounded-2xl p-10 text-center">
+        <h2 class="text-2xl font-bold mb-3">工作时间</h2>
+        <p class="text-lg text-slate-500">周一至周五 08:00 - 18:00</p>
+        <p class="text-sm text-slate-400 mt-2">州内免费上门服务</p>
       </div>
     </div>
   </section>

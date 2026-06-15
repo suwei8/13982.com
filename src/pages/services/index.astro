@@ -18,22 +18,24 @@ const serviceIcons: Record<string, string> = {
 ---
 
 <Base title="产品服务" activeNav="services">
-  <section class="page-header">
-    <div class="container">
-      <h1>产品服务</h1>
-      <p>一站式互联网技术服务，为您的企业赋能</p>
+  <!-- Page Header -->
+  <section class="pt-[calc(72px+48px)] pb-12 bg-gradient-to-br from-blue-50 to-sky-50 text-center">
+    <div class="max-w-7xl mx-auto px-6">
+      <h1 class="text-3xl font-bold mb-2">产品服务</h1>
+      <p class="text-slate-500">一站式互联网技术服务，为您的企业赋能</p>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="grid grid-3">
+  <!-- Services Grid -->
+  <section class="py-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {services.map((s) => (
           <div class="card">
-            <div class="card-body">
+            <div class="p-6">
               <div class="service-icon">{serviceIcons[s.data.title] || '⚡'}</div>
-              <h3>{s.data.title}</h3>
-              <p>{s.data.description}</p>
+              <h3 class="font-semibold text-base mb-2">{s.data.title}</h3>
+              <p class="text-sm text-slate-500 leading-relaxed">{s.data.description}</p>
             </div>
           </div>
         ))}

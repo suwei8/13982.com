@@ -4,60 +4,65 @@ import site from '../content/site.json';
 ---
 
 <Base title="关于我们" activeNav="about">
-  <section class="page-header">
-    <div class="container">
-      <h1>关于我们</h1>
-      <p>了解滇码科技的故事</p>
+  <!-- Page Header -->
+  <section class="pt-[calc(72px+48px)] pb-12 bg-gradient-to-br from-blue-50 to-sky-50 text-center">
+    <div class="max-w-7xl mx-auto px-6">
+      <h1 class="text-3xl font-bold mb-2">关于我们</h1>
+      <p class="text-slate-500">了解滇码科技的故事</p>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container" style="max-width: 800px;">
-      <div style="margin-bottom: 40px;">
-        <h2 style="font-size: 1.5rem; margin-bottom: 16px;">公司简介</h2>
-        <p style="color: var(--text-light); line-height: 1.9;">
+  <!-- Content -->
+  <section class="py-20">
+    <div class="max-w-3xl mx-auto px-6">
+      <!-- Intro -->
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold mb-4">公司简介</h2>
+        <p class="text-slate-500 leading-loose">
           滇码科技成立于2011年，立足于云南省红河州，专注于互联网应用技术开发业务，是首批从事微信开发的服务商。已为多家政府、事业单位、企业完成网站、微信公众号、微信小程序、APP、网络平台、政府内网等技术服务。
         </p>
-        <p style="color: var(--text-light); line-height: 1.9; margin-top: 12px;">
+        <p class="text-slate-500 leading-loose mt-3">
           我们是一家专业从事网络技术开发、销售、培训、运营、策划推广为一体的网络公司，同时具备集网络应用开发、网站建设、电子商务运营等多重开发实力于一身的新锐互联网企业。
         </p>
       </div>
 
-      <div style="margin-bottom: 40px;">
-        <h2 style="font-size: 1.5rem; margin-bottom: 16px;">我们的优势</h2>
-        <div class="feature">
+      <!-- Advantages -->
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold mb-4">我们的优势</h2>
+        <div class="feature-item">
           <div class="feature-icon">🎯</div>
           <div>
-            <h4>专业团队</h4>
-            <p>拥有一支技术超群、个性张扬的专业人才，时刻走在技术前沿，跟踪IT科技发展趋势。</p>
+            <h4 class="font-semibold text-sm mb-1">专业团队</h4>
+            <p class="text-sm text-slate-500">拥有一支技术超群、个性张扬的专业人才，时刻走在技术前沿，跟踪IT科技发展趋势。</p>
           </div>
         </div>
-        <div class="feature">
+        <div class="feature-item">
           <div class="feature-icon">🏆</div>
           <div>
-            <h4>丰富经验</h4>
-            <p>7年云南本地网络公司团队，400多家客户、15个集团公司、12个政府机构服务经验。</p>
+            <h4 class="font-semibold text-sm mb-1">丰富经验</h4>
+            <p class="text-sm text-slate-500">7年云南本地网络公司团队，400多家客户、15个集团公司、12个政府机构服务经验。</p>
           </div>
         </div>
-        <div class="feature">
+        <div class="feature-item">
           <div class="feature-icon">💡</div>
           <div>
-            <h4>创意设计</h4>
-            <p>不仅仅会设计网站，更会策划网站。懂品牌的重要，更懂客户的需求。</p>
+            <h4 class="font-semibold text-sm mb-1">创意设计</h4>
+            <p class="text-sm text-slate-500">不仅仅会设计网站，更会策划网站。懂品牌的重要，更懂客户的需求。</p>
           </div>
         </div>
-        <div class="feature">
+        <div class="feature-item">
           <div class="feature-icon">🤝</div>
           <div>
-            <h4>诚信服务</h4>
-            <p>秉承"想您所想 如你所愿"的服务理念，无行业潜规则，为客户着想。</p>
+            <h4 class="font-semibold text-sm mb-1">诚信服务</h4>
+            <p class="text-sm text-slate-500">秉承"想您所想 如你所愿"的服务理念，无行业潜规则，为客户着想。</p>
           </div>
         </div>
       </div>
 
-      <div style="background: var(--bg-alt); border-radius: var(--radius); padding: 32px; text-align: center;">
-        <h3 style="margin-bottom: 8px;">准备好合作了吗？</h3>
-        <p style="color: var(--text-light); margin-bottom: 20px;">欢迎广大新老客户来电洽谈</p>
+      <!-- CTA -->
+      <div class="bg-slate-50 rounded-2xl p-8 text-center">
+        <h3 class="text-lg font-bold mb-2">准备好合作了吗？</h3>
+        <p class="text-slate-500 mb-5">欢迎广大新老客户来电洽谈</p>
         <a href="/contact/" class="btn btn-primary">联系我们 →</a>
       </div>
     </div>

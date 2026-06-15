@@ -15,18 +15,18 @@ const { Content } = await render(caseData);
 ---
 
 <Base title={caseData.data.title} description={caseData.data.description}>
-  <section class="section" style="padding-top: calc(var(--nav-h) + 40px);">
-    <div class="container" style="max-width: 800px;">
-      <a href="/cases/" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 24px;">← 返回案例列表</a>
-      <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 12px;">{caseData.data.title}</h1>
-      <p style="color: var(--text-light); margin-bottom: 16px;">{caseData.data.description}</p>
-      <div style="margin-bottom: 32px; display: flex; gap: 8px; flex-wrap: wrap;">
+  <section class="pt-[calc(72px+40px)] pb-20">
+    <div class="max-w-3xl mx-auto px-6">
+      <a href="/cases/" class="text-sm text-slate-500 hover:text-primary inline-flex items-center gap-1 mb-6 transition-colors">← 返回案例列表</a>
+      <h1 class="text-3xl font-bold mb-3">{caseData.data.title}</h1>
+      <p class="text-slate-500 mb-4">{caseData.data.description}</p>
+      <div class="mb-8 flex gap-2 flex-wrap items-center">
         {caseData.data.tags.map((tag) => <span class="tag">{tag}</span>)}
-        <span style="font-size: 0.85rem; color: var(--text-muted); align-self: center;">
+        <span class="text-xs text-slate-400 ml-1">
           {caseData.data.date.toLocaleDateString('zh-CN')}
         </span>
       </div>
-      <article style="line-height: 1.9; color: var(--text-light);">
+      <article class="prose">
         <Content />
       </article>
     </div>

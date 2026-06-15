@@ -3,6 +3,8 @@ dist/
 .cache/
 .env
 .env.local
+.env.*
+!.env.example
 *.log
 .DS_Store
 Thumbs.db
@@ -10,4 +12,3 @@ Thumbs.db
 # Credentials
 public/admin-config.js
 HANDOFF_CREDENTIALS.md
-scripts/export-mysql.py

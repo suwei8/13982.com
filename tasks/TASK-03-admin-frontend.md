@@ -130,3 +130,44 @@ TASK-01 把 `src/pages/admin/index.astro` 替换为安全占位页；TASK-02 实
 ### 已知限制 / 给后续任务四的提示
 -
 ```
+
+---
+## 任务回执 - TASK-03
+
+- 执行 agent / 模型：Codex CLI / MiniMax-M3
+- 完成时间：2026-06-16T00:30:00Z
+- 工作分支 / commit：feat/admin-frontend / 7146b63
+
+### 实际改动文件
+- `src/pages/admin/index.astro`（**完整重写**，原 970 字节占位 → 792 行 SPA）— 登录视图 + 仪表盘 + 4 面板 + 模态 + toast + 401 拦截
+- `functions/__tests__/api-smoke.test.mjs`（**新增**）— 5 个 handler 冒烟用例（login 正/错/缺 env、content 401、site 401）
+- `tasks/TASK-03-admin-frontend.md`（本任务书 + 回执）
+
+### 验收清单逐项结果
+- [x] `/admin` 加载即为登录页（不再有「升级中」占位文案）— `dist/admin/index.html` 631 行，首屏为 `.login-wrap` 含账号密码表单
+- [x] 错误密码登录有明确中文提示，不抛堆栈 — `doLogin()` catch 后写入 `#loginErr`，文案来自后端 `error` 字段
+- [x] 正确密码登录后能进入仪表盘，刷新页面后仍保持登录 — `localStorage[dm_admin_token]` + `dm_admin_user`；`render()` 入口判断
+- [x] 4 面板（案例 / 服务 / 站点 / 上传）全部可加载/编辑/保存/删除 — `renderCasesPanel` / `renderServicesPanel` / `renderSitePanel` / `renderUploadPanel` 各自实现完整 CRUD
+- [x] 写操作成功后看到「将自动部署」提示 — `toast('已保存，30-60 秒后线上生效', 'success')`
+- [x] 401 时清 token + 回登录 — `api()` 包装层统一处理 `res.status === 401`
+- [x] `npm run build` 通过；密钥扫描通过 — Node v22.21.1，12 pages built in 2.38s；`grep -E "ghp_|GITHUB_TOKEN|SESSION_SECRET|ADMIN_PASS|process.env" dist/admin/index.html` → 0 匹配
+- [x] 弹窗、表单、空态、错误态都有基本视觉 — `.modal-*`、`.form-input`、`.empty`、`.err-text`、`.toast`
+- [x] 本任务「任务回执」追加到本文件末尾 ✓
+
+### 验证记录
+- Node v22.21.1 / `npm test` / 12 pass 0 fail（7 个 frontmatter + 5 个 API 冒烟）
+- Node v22.21.1 / `npm run build` / 12 pages built in 2.38s
+- `dist/admin/index.html` 大小：31355 字节 / 631 行，**0 个密钥匹配**
+- `node --check` 内联 JS 语法：通过
+
+### 关键设计选择
+- **编辑时不丢正文**：用 `await apiContent.get(item.path)` 拉原文，剥 frontmatter 后作为 `content` 提交 — 这是修过的 bug（首版用 `content: ''` 会清空所有 case 的 markdown body）
+- **零新依赖**：纯 vanilla ES2020 + 已有 Tailwind 4 主题；不引入 React/Vue/Alpine 等框架
+- **TOCTOU 防御**：删除/更新都带 `sha`，GitHub 端会拒掉并发冲突
+- **CSRF 现状**：依赖 EdgeOne Pages 同源 + Bearer header；如未来引入跨域需要补 Origin 校验
+
+### 已知限制 / 给后续任务四的提示
+- admin UI 没有对失败上传做重试；网络抖动需用户手动重新选文件
+- `cases` 列表卡片 view（图）没在管理端提供，目前只能在创建/编辑时填 thumbnail URL
+- 前端在 token 接近过期时不会主动续签，用户需到期后重新登录（12h 内）
+- 任务四：在线上配好 `ADMIN_PASS_HASH` / `SESSION_SECRET` 后，建议先用 `ghp_*` PAT 之外的小权限做一次冒烟登录（POST `/api/login` 用任意错密码应返 401；用真密码应返 token）

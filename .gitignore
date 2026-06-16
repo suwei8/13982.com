@@ -13,3 +13,4 @@ Thumbs.db
 public/admin-config.js
 HANDOFF_CREDENTIALS.md
 .deploy/
+.agent-bridge/

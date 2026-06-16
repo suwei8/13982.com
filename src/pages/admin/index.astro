@@ -835,8 +835,8 @@
 
       // ===== 图片清理面板 =====
       const apiCleanup = {
-        scan: () => api('/api/images/cleanup'),
-        delete: (path, sha, message) => api('/api/images/cleanup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, sha, message }) }),
+        scan: () => api('/api/cleanup-images'),
+        delete: (path, sha, message) => api('/api/cleanup-images', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, sha, message }) }),
       };
 
       function renderCleanupPanel() {

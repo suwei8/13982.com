@@ -42,7 +42,12 @@ export async function onRequestGet(context) {
         const file = await getFile(contentPath, env);
         const content = file.content;
         // Match /images/... references
-        const matches = content.match(/\/images\/[^\s"'})\]*/g) || [];
+        const matches = [];
+        const regex = /\/images\/\S+/g;
+        let m;
+        while ((m = regex.exec(content)) !== null) {
+          matches.push(m[0]);
+        }
         for (const m of matches) {
           // Clean up trailing punctuation
           const clean = m.replace(/[.,;:!?)\]]+$/, '');

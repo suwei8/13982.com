@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --test functions/__tests__/*.test.mjs"
+    "test": "node --test edge-functions/__tests__/*.test.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",

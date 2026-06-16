@@ -1,26 +1,24 @@
-const GITHUB_API = 'https://api.github.com';
+const GIT_API = 'https://gitee.com/api/v5';
 
 function getHeaders(env) {
   return {
-    'Authorization': `Bearer ${env.GITHUB_TOKEN}`,
-    'Accept': 'application/vnd.github.v3+json',
+    'Authorization': `Bearer ${env.GITEE_TOKEN}`,
     'Content-Type': 'application/json',
-    'User-Agent': '13982-admin',
   };
 }
 
 function getOwnerRepo(env) {
-  return { owner: env.GITHUB_OWNER, repo: env.GITHUB_REPO };
+  return { owner: env.GITEE_OWNER, repo: env.GITEE_REPO };
 }
 
 function getBranch(env) {
-  return env.GITHUB_BRANCH || 'main';
+  return env.GITEE_BRANCH || 'master';
 }
 
 export async function listDir(dirPath, env) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(dirPath);
-  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
+  const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
   const res = await fetch(url, { headers: getHeaders(env) });
   if (res.status === 404) return [];
   if (!res.ok) {
@@ -33,7 +31,7 @@ export async function listDir(dirPath, env) {
 export async function getFile(filePath, env) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(filePath);
-  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
+  const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
   const res = await fetch(url, { headers: getHeaders(env) });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -51,7 +49,7 @@ export async function getFile(filePath, env) {
 export async function putFile(filePath, content, message, env, sha) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(filePath);
-  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
+  const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
   const body = {
     message,
     content: encodeBase64(content),
@@ -73,7 +71,7 @@ export async function putFile(filePath, content, message, env, sha) {
 export async function deleteFile(filePath, sha, message, env) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(filePath);
-  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
+  const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
   const res = await fetch(url, {
     method: 'DELETE',
     headers: getHeaders(env),

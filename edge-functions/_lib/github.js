@@ -19,7 +19,8 @@ function getBranch(env) {
 
 export async function listDir(dirPath, env) {
   const { owner, repo } = getOwnerRepo(env);
-  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${dirPath}?ref=${getBranch(env)}`;
+  const encodedPath = encodeURIComponent(dirPath);
+  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
   const res = await fetch(url, { headers: getHeaders(env) });
   if (res.status === 404) return [];
   if (!res.ok) {
@@ -31,7 +32,8 @@ export async function listDir(dirPath, env) {
 
 export async function getFile(filePath, env) {
   const { owner, repo } = getOwnerRepo(env);
-  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${filePath}?ref=${getBranch(env)}`;
+  const encodedPath = encodeURIComponent(filePath);
+  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
   const res = await fetch(url, { headers: getHeaders(env) });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -48,7 +50,8 @@ export async function getFile(filePath, env) {
 
 export async function putFile(filePath, content, message, env, sha) {
   const { owner, repo } = getOwnerRepo(env);
-  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${filePath}`;
+  const encodedPath = encodeURIComponent(filePath);
+  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
   const body = {
     message,
     content: encodeBase64(content),
@@ -69,7 +72,8 @@ export async function putFile(filePath, content, message, env, sha) {
 
 export async function deleteFile(filePath, sha, message, env) {
   const { owner, repo } = getOwnerRepo(env);
-  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${filePath}`;
+  const encodedPath = encodeURIComponent(filePath);
+  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
   const res = await fetch(url, {
     method: 'DELETE',
     headers: getHeaders(env),
@@ -91,7 +95,7 @@ function encodeBase64(str) {
 }
 
 function decodeBase64(str) {
-  return decodeURIComponent(escape(atob(str)));
+  return decodeURIComponent(escape(atob(str.replace(/\n/g, ''))));
 }
 
 // YAML double-quoted scalar escaping (subset of YAML 1.2 spec).

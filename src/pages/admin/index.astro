@@ -489,6 +489,7 @@
         const thumbInp = el('input', { class: 'form-input', type: 'text', value: f.thumbnail, placeholder: '/images/cases/xxx.png' });
         const tagsInp = el('input', { class: 'form-input', type: 'text', value: f.tags, placeholder: '逗号分隔，例如：网站建设, 响应式' });
         const dateInp = el('input', { class: 'form-input', type: 'date', value: f.date, required: true });
+        const bodyInp = el('textarea', { class: 'form-input', style: { minHeight: '120px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '13px' } }, existingBody);
 
         form.append(
           mkField('标题', titleInp, true),
@@ -496,6 +497,7 @@
           mkField('缩略图 URL（可空）', thumbInp),
           mkField('标签（逗号分隔）', tagsInp),
           mkField('日期', dateInp, true),
+          mkField('正文内容（Markdown）', bodyInp),
         );
 
         const submit = el('button', { class: 'btn btn-primary', type: 'submit' }, isEdit ? '保存' : '创建');
@@ -512,7 +514,7 @@
           if (!data.title || !data.description || !data.date) { toast('请填写必填项', 'error'); return; }
           submit.disabled = true; submit.textContent = '保存中...';
           try {
-            const payload = { type: 'cases', data, content: existingBody };
+            const payload = { type: 'cases', data, content: bodyInp.value };
             if (isEdit) {
               payload.path = item.path;
               payload.sha = item.sha;
@@ -623,12 +625,14 @@
         const descInp = el('textarea', { class: 'form-input', required: true }, f.description);
         const iconInp = el('input', { class: 'form-input', type: 'text', value: f.icon, placeholder: '如：globe、cart（可空）' });
         const orderInp = el('input', { class: 'form-input', type: 'number', value: f.order });
+        const bodyInp = el('textarea', { class: 'form-input', style: { minHeight: '120px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '13px' } }, existingBody);
 
         form.append(
           mkField('标题', titleInp, true),
           mkField('描述', descInp, true),
           mkField('图标（可空）', iconInp),
           mkField('排序（数字越小越靠前）', orderInp),
+          mkField('正文内容（Markdown）', bodyInp),
         );
 
         const submit = el('button', { class: 'btn btn-primary', type: 'submit' }, isEdit ? '保存' : '创建');
@@ -644,7 +648,7 @@
           if (!data.title || !data.description) { toast('请填写必填项', 'error'); return; }
           submit.disabled = true; submit.textContent = '保存中...';
           try {
-            const payload = { type: 'services', data, content: existingBody };
+            const payload = { type: 'services', data, content: bodyInp.value };
             if (isEdit) { payload.path = item.path; payload.sha = item.sha; }
             await apiContent.save(payload);
             toast('已保存，30-60 秒后线上生效', 'success');

@@ -2,6 +2,18 @@ import { authenticate } from '../_lib/auth.js';
 import { putFile } from '../_lib/github.js';
 import { json, error } from '../_lib/response.js';
 
+// Convert an ArrayBuffer/Uint8Array to base64 in 32 KiB chunks to avoid
+// O(n^2) string concat from String.fromCharCode in a tight loop.
+function bytesToBase64(bytes) {
+  const view = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  let binary = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < view.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(null, view.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -25,7 +37,7 @@ export async function onRequestPost(context) {
     return error('Missing "file" field');
   }
 
-  const ext = file.name.split('.').pop() || 'bin';
+  const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
   const timestamp = Date.now();
   const uploadPath = `public/images/uploads/${timestamp}.${ext}`;
 
@@ -36,9 +48,7 @@ export async function onRequestPost(context) {
     return error('Failed to read file');
   }
 
-  const base64 = btoa(
-    new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-  );
+  const base64 = bytesToBase64(arrayBuffer);
 
   try {
     const result = await putFile(

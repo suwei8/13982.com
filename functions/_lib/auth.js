@@ -38,12 +38,6 @@ export async function hashPassword(password, secret) {
   return hmacSign(password, secret);
 }
 
-export function createToken(user, secret, expHours = 12) {
-  const exp = Math.floor(Date.now() / 1000) + expHours * 3600;
-  const payload = JSON.stringify({ user, exp });
-  const b64 = btoa(payload).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  return `${b64}.pending`;
-}
 
 export async function signToken(user, secret, expHours = 12) {
   const exp = Math.floor(Date.now() / 1000) + expHours * 3600;

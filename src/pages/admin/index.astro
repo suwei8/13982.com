@@ -374,11 +374,12 @@
             navItem('services', '服务', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'),
             navItem('site', '站点信息', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"/></svg>'),
             navItem('upload', '图片上传', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'),
+            navItem('cleanup', '图片清理', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'),
           ),
           el('div', { class: 'sidebar-foot' }, '© 滇码科技')
         );
 
-        const titles = { cases: '客户案例', services: '产品服务', site: '站点信息', upload: '图片上传' };
+        const titles = { cases: '客户案例', services: '产品服务', site: '站点信息', upload: '图片上传', cleanup: '图片清理' };
         const logoutBtn = el('button', { onclick: () => logout() }, '退出登录');
         const topbar = el('div', { class: 'topbar' },
           el('div', { class: 'topbar-title' }, titles[state.activeTab] || ''),
@@ -393,6 +394,7 @@
         else if (state.activeTab === 'services') content.appendChild(renderServicesPanel());
         else if (state.activeTab === 'site') content.appendChild(renderSitePanel());
         else if (state.activeTab === 'upload') content.appendChild(renderUploadPanel());
+        else if (state.activeTab === 'cleanup') content.appendChild(renderCleanupPanel());
 
         const main = el('section', { class: 'main' }, topbar, content);
         const app = el('div', { class: 'app' }, sidebar, main);
@@ -829,6 +831,77 @@
           try { document.execCommand('copy'); toast('已复制', 'success'); } catch { toast('复制失败，请手动复制', 'error'); }
           document.body.removeChild(ta);
         }
+      }
+
+      // ===== 图片清理面板 =====
+      const apiCleanup = {
+        scan: () => api('/api/images/cleanup'),
+        delete: (path, sha, message) => api('/api/images/cleanup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, sha, message }) }),
+      };
+
+      function renderCleanupPanel() {
+        const wrap = el('div');
+        const scanBtn = el('button', { class: 'btn btn-primary btn-sm', onclick: doScan }, '🔍 扫描未使用图片');
+        const head = el('div', { class: 'panel-header' },
+          el('div', {},
+            el('div', { class: 'panel-title' }, '图片清理'),
+            el('div', { class: 'panel-sub' }, '扫描仓库中的图片，找出未被内容引用的图片并删除，节省仓库空间')
+          ),
+          el('div', { style: { display: 'flex', gap: '8px' } }, scanBtn)
+        );
+
+        const resultWrap = el('div', { class: 'card', style: { padding: '20px' } },
+          el('div', { class: 'empty' }, '点击「扫描未使用图片」开始')
+        );
+
+        async function doScan() {
+          scanBtn.disabled = true; scanBtn.textContent = '扫描中...';
+          resultWrap.innerHTML = '';
+          try {
+            const r = await apiCleanup.scan();
+            if (r.unreferenced.length === 0) {
+              resultWrap.appendChild(el('div', { class: 'empty', style: { padding: '20px', color: '#16a34a' }, html: '✅ 所有图片均被引用，无需清理' }));
+              return;
+            }
+            const info = el('div', { style: { marginBottom: '12px', fontSize: '13px', color: '#475569' } },
+              el('span', { style: { fontWeight: 600 } }, `发现 ${r.unreferenced.length} 张未使用图片`),
+              el('span', {}, `（共 ${r.total} 张，${r.referenced} 张已引用）`)
+            );
+            resultWrap.appendChild(info);
+
+            const list = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } });
+            for (const img of r.unreferenced) {
+              const row = el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' } },
+                el('img', { src: img.url, style: { width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0' } }),
+                el('div', { style: { flex: 1, minWidth: 0 } },
+                  el('div', { style: { fontSize: '13px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, img.name),
+                  el('div', { style: { fontSize: '11px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, img.url)
+                ),
+                el('button', { class: 'btn btn-danger btn-sm', onclick: () => deleteImg(img) }, '删除')
+              );
+              list.appendChild(row);
+            }
+            resultWrap.appendChild(list);
+          } catch (e) {
+            resultWrap.appendChild(el('div', { class: 'empty', style: { color: '#dc2626' }, html: '扫描失败：' + e.message }));
+          } finally {
+            scanBtn.disabled = false; scanBtn.textContent = '🔍 扫描未使用图片';
+          }
+        }
+
+        async function deleteImg(img) {
+          if (!confirm(`确认删除「${img.name}」？\n路径：${img.url}\n此操作会提交到 Gitee 仓库。`)) return;
+          try {
+            await apiCleanup.delete(img.path, img.sha, `chore: remove unused image ${img.name}`);
+            toast(`已删除 ${img.name}`, 'success');
+            doScan();
+          } catch (e) {
+            toast('删除失败：' + e.message, 'error');
+          }
+        }
+
+        wrap.append(head, resultWrap);
+        return wrap;
       }
 
       function mkField(label, input, required = false) {

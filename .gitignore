@@ -12,3 +12,4 @@ Thumbs.db
 # Credentials
 public/admin-config.js
 HANDOFF_CREDENTIALS.md
+.deploy/

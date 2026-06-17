@@ -46,13 +46,27 @@ export async function getFile(filePath, env) {
   };
 }
 
-export async function putFile(filePath, content, message, env, sha) {
+function formatApiError(err, fallback) {
+  if (!err || typeof err !== 'object') return fallback;
+  const parts = [err.message, err.error, err.error_description]
+    .filter(Boolean)
+    .map(String);
+  if (Array.isArray(err.errors)) {
+    for (const item of err.errors) {
+      if (typeof item === 'string') parts.push(item);
+      else if (item && typeof item === 'object') parts.push(JSON.stringify(item));
+    }
+  }
+  return parts.length > 0 ? parts.join('; ') : fallback;
+}
+
+async function writeFile(filePath, base64Content, message, env, sha) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(filePath);
   const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
   const body = {
     message,
-    content: encodeBase64(content),
+    content: base64Content,
     branch: getBranch(env),
   };
   if (sha) body.sha = sha;
@@ -63,9 +77,17 @@ export async function putFile(filePath, content, message, env, sha) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Gitee API error: ${res.status}`);
+    throw new Error(formatApiError(err, `Gitee API error: ${res.status}`));
   }
   return res.json();
+}
+
+export async function putFile(filePath, content, message, env, sha) {
+  return writeFile(filePath, encodeBase64(content), message, env, sha);
+}
+
+export async function putFileBase64(filePath, base64Content, message, env, sha) {
+  return writeFile(filePath, base64Content, message, env, sha);
 }
 
 export async function deleteFile(filePath, sha, message, env) {

@@ -11,108 +11,188 @@ const services = (await getCollection('services')).sort(
 );
 
 const serviceIcons: Record<string, string> = {
-  '网站建设': '🌐', '小程序开发': '📱', '公众号开发': '💬',
-  'APP开发': '📲', '网络推广': '📈', '电商服务': '🛒',
-  '直播服务': '📡', '微信抽奖': '🎁', '400电话': '📞',
-  '商标注册': '™️', 'OA系统定制': '⚙️', '商城网站': '🏪',
-  '网站空间': '☁️', '域名注册': '🔗', '企业邮箱': '📧',
-  '企业画册': '📖', 'Logo设计': '🎨', '视频制作': '🎬',
-  '运维服务': '🔧',
+  '企业官网建设': '🌐',
+  '小程序开发': '📱',
+  'APP开发': '📲',
+  '业务系统定制': '⚙️',
+  '管理后台与CMS': '🧩',
+  '云部署与运维': '☁️',
 };
+
+const coreServices = services.slice(0, 6);
+const featuredCases = cases.slice(0, 6);
+const process = [
+  ['01', '需求诊断', '梳理业务目标、用户路径与功能边界，先把项目做对。'],
+  ['02', '方案设计', '输出信息架构、交互原型、技术路线与上线计划。'],
+  ['03', '研发交付', '前后端开发、接口联调、内容配置、性能与兼容性测试。'],
+  ['04', '上线运维', '部署到 EdgeOne，持续维护、内容更新与数据迭代。'],
+];
 ---
 
-<Base title="首页" activeNav="home">
+<Base title="首页" activeNav="home" description="滇码科技专注企业官网、小程序、APP、业务系统与数字化工具开发，为红河、蒙自及云南企业提供从策划设计到上线运维的一站式技术服务。">
   <!-- Hero -->
-  <section class="relative overflow-hidden pt-[calc(72px+80px)] pb-20 bg-gradient-to-br from-blue-50 via-sky-50 to-primary-light">
-    <div class="hero-blob"></div>
-    <div class="max-w-7xl mx-auto px-6 relative z-10">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-sm text-primary font-medium mb-6">
-        云南红河 · 7年专注互联网技术服务
-      </div>
-      <h1 class="text-4xl md:text-5xl lg:text-[3.2rem] font-bold leading-tight mb-5">
-        互联网+选<span class="text-primary">滇码科技</span>
-      </h1>
-      <p class="text-lg text-slate-500 max-w-xl mb-9">{site.description}</p>
-      <div class="flex flex-wrap gap-3">
-        <a href="/contact/" class="btn btn-primary">免费咨询 →</a>
-        <a href="/cases/" class="btn btn-outline">查看案例</a>
-      </div>
-      <div class="flex gap-12 mt-12 pt-8 border-t border-primary/15">
-        <div>
-          <div class="text-3xl font-bold text-primary">{site.stats.years}</div>
-          <div class="text-sm text-slate-400 mt-1">本土持久服务</div>
+  <section class="relative overflow-hidden pt-[calc(72px+72px)] pb-24 bg-slate-950 text-white">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.35),transparent_32%),radial-gradient(circle_at_80%_10%,rgba(14,165,233,0.22),transparent_28%),linear-gradient(135deg,#020617_0%,#0f172a_48%,#172554_100%)]"></div>
+    <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white to-transparent"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 border border-white/15 rounded-full text-sm text-blue-100 font-medium mb-7 backdrop-blur">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          红河本地技术团队 · 7 年持续服务企业数字化
         </div>
-        <div>
-          <div class="text-3xl font-bold text-primary">{site.stats.clients}</div>
-          <div class="text-sm text-slate-400 mt-1">企业建站客户</div>
+        <h1 class="text-4xl md:text-6xl lg:text-[4.5rem] font-bold leading-[1.08] tracking-tight mb-6">
+          为成长型企业打造<br />高质量网站与<span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-blue-400">数字化系统</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-300 max-w-2xl leading-relaxed mb-9">
+          滇码科技提供企业官网、小程序、APP、业务系统与运维托管服务，从策划设计到上线部署，帮助企业建立稳定、专业、可持续迭代的数字化能力。
+        </p>
+        <div class="flex flex-wrap gap-4 mb-12">
+          <a href="/contact/" class="btn btn-white">预约项目咨询 →</a>
+          <a href="/cases/" class="btn btn-ghost">查看成功案例</a>
         </div>
-        <div>
-          <div class="text-3xl font-bold text-primary">{site.stats.longterm}</div>
-          <div class="text-sm text-slate-400 mt-1">长期托管服务</div>
+        <div class="grid grid-cols-3 gap-5 max-w-xl">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+            <div class="text-3xl font-bold text-white">{site.stats.years}</div>
+            <div class="text-xs text-slate-400 mt-1">本土持续服务</div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+            <div class="text-3xl font-bold text-white">{site.stats.clients}</div>
+            <div class="text-xs text-slate-400 mt-1">企业建站客户</div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+            <div class="text-3xl font-bold text-white">{site.stats.longterm}</div>
+            <div class="text-xs text-slate-400 mt-1">长期托管客户</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative hidden lg:block">
+        <div class="absolute -inset-6 rounded-[2rem] bg-blue-500/20 blur-3xl"></div>
+        <div class="relative rounded-[2rem] border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-xl">
+          <div class="rounded-[1.5rem] bg-slate-950/90 border border-white/10 overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-white/10">
+              <div class="flex gap-2"><span class="w-3 h-3 rounded-full bg-red-400"></span><span class="w-3 h-3 rounded-full bg-yellow-400"></span><span class="w-3 h-3 rounded-full bg-green-400"></span></div>
+              <div class="text-xs text-slate-400">Digital Project Console</div>
+            </div>
+            <div class="p-6 space-y-5">
+              <div class="grid grid-cols-3 gap-3">
+                <div class="rounded-2xl bg-blue-500/15 border border-blue-400/20 p-4"><div class="text-xs text-slate-400">官网性能</div><div class="text-2xl font-bold mt-2">98</div></div>
+                <div class="rounded-2xl bg-cyan-500/15 border border-cyan-400/20 p-4"><div class="text-xs text-slate-400">项目进度</div><div class="text-2xl font-bold mt-2">86%</div></div>
+                <div class="rounded-2xl bg-emerald-500/15 border border-emerald-400/20 p-4"><div class="text-xs text-slate-400">稳定运行</div><div class="text-2xl font-bold mt-2">99.9%</div></div>
+              </div>
+              <div class="rounded-2xl bg-white/[0.04] border border-white/10 p-5">
+                <div class="flex items-center justify-between mb-4"><span class="font-semibold">一体化交付能力</span><span class="text-xs text-emerald-300">Live</span></div>
+                <div class="space-y-3">
+                  {['品牌官网', '小程序应用', '业务系统', '运维托管'].map((item, i) => (
+                    <div class="flex items-center gap-3">
+                      <span class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-200 flex items-center justify-center text-sm">{i + 1}</span>
+                      <span class="text-sm text-slate-300 flex-1">{item}</span>
+                      <span class="h-2 w-24 rounded-full bg-slate-800 overflow-hidden"><span class="block h-full bg-gradient-to-r from-blue-400 to-cyan-300" style={`width:${92 - i * 9}%`}></span></span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-sm text-slate-300">EdgeOne 静态部署</div>
+                <div class="rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-sm text-slate-300">Blob 媒体存储</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- Trust -->
+  <section class="py-10 bg-white border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+      {['政企单位服务经验', '企业官网与系统定制', '内容可视化管理后台', '上线后持续运维'].map((item) => (
+        <div class="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-5 text-sm font-medium text-slate-600">{item}</div>
+      ))}
+    </div>
+  </section>
+
   <!-- Services -->
-  <section class="py-20 bg-slate-50">
+  <section class="py-24 bg-slate-50">
     <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-12">
-        <div class="section-overline">产品服务</div>
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">一站式互联网技术服务</h2>
-        <p class="text-slate-500 max-w-xl mx-auto">结合创意、设计、营销、研发等多维度，为您提供更精准的方案</p>
+      <div class="max-w-3xl mb-12">
+        <div class="section-overline">核心服务</div>
+        <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-5">不只是建站，而是构建企业数字化能力</h2>
+        <p class="text-slate-500 text-lg leading-relaxed">围绕获客展示、业务流转、客户运营和长期运维，提供从前端体验到系统架构的一体化交付。</p>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {services.slice(0, 8).map((s) => (
-          <div class="card">
-            <div class="p-6">
-              <div class="service-icon">{serviceIcons[s.data.title] || '⚡'}</div>
-              <h3 class="font-semibold text-base mb-2">{s.data.title}</h3>
-              <p class="text-sm text-slate-500 leading-relaxed">{s.data.description}</p>
-            </div>
-          </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {coreServices.map((s) => (
+          <a href="/services/" class="group card no-underline p-7 hover:bg-slate-950">
+            <div class="service-icon group-hover:bg-white/10 group-hover:text-white">{serviceIcons[s.data.title] || '⚡'}</div>
+            <h3 class="font-semibold text-xl mb-3 text-slate-900 group-hover:text-white">{s.data.title}</h3>
+            <p class="text-sm text-slate-500 leading-relaxed group-hover:text-slate-300">{s.data.description}</p>
+            <div class="mt-6 text-sm text-primary group-hover:text-sky-300">了解服务 →</div>
+          </a>
         ))}
       </div>
-      <div class="text-center mt-8">
+      <div class="mt-10">
         <a href="/services/" class="btn btn-outline">查看全部服务 →</a>
       </div>
     </div>
   </section>
 
-  <!-- Cases -->
-  <section class="py-20">
+  <!-- Process -->
+  <section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-12">
-        <div class="section-overline">客户案例</div>
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">用案例说话</h2>
-        <p class="text-slate-500 max-w-xl mx-auto">专注网页设计、小程序开发、APP开发，助力企业拥抱互联网+</p>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cases.map((c) => (
-          <a href={`/cases/${c.id}/`} class="card no-underline">
-            <div class="p-6">
-              <h3 class="font-semibold text-base mb-2 text-slate-900">{c.data.title}</h3>
-              <p class="text-sm text-slate-500 leading-relaxed">{c.data.description}</p>
-              <div class="mt-3 flex gap-2">
-                {c.data.tags.map((tag) => <span class="tag">{tag}</span>)}
-              </div>
+      <div class="grid lg:grid-cols-[0.8fr_1.2fr] gap-12 items-start">
+        <div>
+          <div class="section-overline">交付方式</div>
+          <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-5">从需求到上线，每一步都清晰可控</h2>
+          <p class="text-slate-500 text-lg leading-relaxed mb-8">我们用软件项目的方式做官网，用产品思维做系统，让沟通、进度、质量和后续维护都有标准可循。</p>
+          <a href="/contact/" class="btn btn-primary">聊聊你的项目</a>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-5">
+          {process.map(([num, title, desc]) => (
+            <div class="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+              <div class="text-sm font-bold text-primary mb-6">{num}</div>
+              <h3 class="text-xl font-semibold mb-3">{title}</h3>
+              <p class="text-sm text-slate-500 leading-relaxed">{desc}</p>
             </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cases -->
+  <section class="py-24 bg-slate-950 text-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+        <div>
+          <div class="section-overline !text-sky-300">客户案例</div>
+          <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">真实项目沉淀出的行业经验</h2>
+          <p class="text-slate-400 max-w-2xl">服务政企单位、本地品牌、食品企业、教育培训、协会组织等客户，用可落地的技术方案解决业务问题。</p>
+        </div>
+        <a href="/cases/" class="btn btn-ghost">查看全部案例</a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {featuredCases.map((c) => (
+          <a href={`/cases/${c.id}/`} class="rounded-3xl border border-white/10 bg-white/[0.04] p-7 no-underline hover:bg-white/[0.08] transition-all duration-300">
+            <div class="flex gap-2 mb-5 flex-wrap">
+              {c.data.tags.map((tag) => <span class="px-3 py-1 rounded-full bg-blue-400/10 text-sky-200 text-xs">{tag}</span>)}
+            </div>
+            <h3 class="font-semibold text-xl mb-3 text-white">{c.data.title || '客户案例'}</h3>
+            <p class="text-sm text-slate-400 leading-relaxed line-clamp-4">{c.data.description || '企业数字化项目案例。'}</p>
+            <div class="mt-6 text-sm text-sky-300">查看详情 →</div>
           </a>
         ))}
-      </div>
-      <div class="text-center mt-8">
-        <a href="/cases/" class="btn btn-outline">查看更多案例 →</a>
       </div>
     </div>
   </section>
 
   <!-- CTA -->
-  <section class="py-20 bg-gradient-to-r from-primary to-primary-dark text-white text-center">
-    <div class="max-w-7xl mx-auto px-6">
-      <h2 class="text-3xl font-bold mb-4 text-white">准备好开始了吗？</h2>
-      <p class="text-lg opacity-85 mb-8 max-w-md mx-auto">一个微信、一个电话，开启一个项目的合作</p>
+  <section class="py-24 bg-gradient-to-r from-primary to-primary-dark text-white text-center">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-sm text-blue-100 mb-4">现在开始规划你的数字化项目</div>
+      <h2 class="text-3xl md:text-5xl font-bold mb-6 text-white">让官网、系统和运营工具真正服务业务增长</h2>
+      <p class="text-lg opacity-85 mb-9 max-w-2xl mx-auto">告诉我们你的目标与预算，我们会给出适合当前阶段的建设路径。</p>
       <div class="flex flex-wrap gap-4 justify-center">
-        <a href="/contact/" class="btn btn-white">联系我们</a>
+        <a href="/contact/" class="btn btn-white">预约咨询</a>
         <a href={`tel:${site.phone_mobile}`} class="btn btn-ghost">拨打电话</a>
       </div>
     </div>

@@ -7,22 +7,21 @@ const services = (await getCollection('services')).sort(
 );
 
 const serviceIcons: Record<string, string> = {
-  '网站建设': '🌐', '小程序开发': '📱', '公众号开发': '💬',
-  'APP开发': '📲', '网络推广': '📈', '电商服务': '🛒',
-  '直播服务': '📡', '微信抽奖': '🎁', '400电话': '📞',
-  '商标注册': '™️', 'OA系统定制': '⚙️', '商城网站': '🏪',
-  '网站空间': '☁️', '域名注册': '🔗', '企业邮箱': '📧',
-  '企业画册': '📖', 'Logo设计': '🎨', '视频制作': '🎬',
-  '运维服务': '🔧',
+  '企业官网建设': '🌐',
+  '小程序开发': '📱',
+  'APP开发': '📲',
+  '业务系统定制': '⚙️',
+  '管理后台与CMS': '🧩',
+  '云部署与运维': '☁️',
 };
 ---
 
-<Base title="产品服务" activeNav="services">
+<Base title="产品服务" activeNav="services" description="滇码科技提供企业官网建设、小程序开发、APP开发、业务系统定制、管理后台 CMS 与云部署运维服务。">
   <!-- Page Header -->
   <section class="pt-[calc(72px+48px)] pb-12 bg-gradient-to-br from-blue-50 to-sky-50 text-center">
     <div class="max-w-7xl mx-auto px-6">
       <h1 class="text-3xl font-bold mb-2">产品服务</h1>
-      <p class="text-slate-500">一站式互联网技术服务，为您的企业赋能</p>
+      <p class="text-slate-500">围绕获客展示、业务流转、后台管理和稳定运维，为企业提供真正可落地的软件开发服务</p>
     </div>
   </section>
 
@@ -31,10 +30,10 @@ const serviceIcons: Record<string, string> = {
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {services.map((s) => (
-          <div class="card">
-            <div class="p-6">
+          <div class="card hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+            <div class="p-8">
               <div class="service-icon">{serviceIcons[s.data.title] || '⚡'}</div>
-              <h3 class="font-semibold text-base mb-2">{s.data.title}</h3>
+              <h3 class="font-semibold text-xl mb-3">{s.data.title}</h3>
               <p class="text-sm text-slate-500 leading-relaxed">{s.data.description}</p>
             </div>
           </div>

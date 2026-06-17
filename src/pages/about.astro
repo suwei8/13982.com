@@ -3,68 +3,65 @@ import Base from '../layouts/Base.astro';
 import site from '../content/site.json';
 ---
 
-<Base title="关于我们" activeNav="about">
-  <!-- Page Header -->
-  <section class="pt-[calc(72px+48px)] pb-12 bg-gradient-to-br from-blue-50 to-sky-50 text-center">
-    <div class="max-w-7xl mx-auto px-6">
-      <h1 class="text-3xl font-bold mb-2">关于我们</h1>
-      <p class="text-slate-500">了解滇码科技的故事</p>
+<Base title="关于我们" activeNav="about" description="滇码科技是位于云南红河蒙自的软件开发团队，专注企业官网、小程序、APP、业务系统、管理后台与云部署运维。">
+  <section class="pt-[calc(72px+72px)] pb-20 bg-slate-950 text-white overflow-hidden relative">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.35),transparent_30%),linear-gradient(135deg,#020617,#0f172a_55%,#172554)]"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-[0.9fr_1.1fr] gap-12 items-end">
+      <div>
+        <div class="section-overline !text-sky-300">关于滇码科技</div>
+        <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-6 text-white">扎根红河的<br />软件开发与数字化服务团队</h1>
+        <p class="text-lg text-slate-300 leading-relaxed">我们长期服务本地企业、政企单位与成长型团队，把官网、小程序、APP、业务系统和运维托管做成可持续迭代的数字资产。</p>
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="rounded-3xl bg-white/10 border border-white/10 p-6 backdrop-blur"><div class="text-3xl font-bold">{site.stats.years}</div><div class="text-sm text-slate-300 mt-2">持续服务</div></div>
+        <div class="rounded-3xl bg-white/10 border border-white/10 p-6 backdrop-blur"><div class="text-3xl font-bold">{site.stats.clients}</div><div class="text-sm text-slate-300 mt-2">客户经验</div></div>
+        <div class="rounded-3xl bg-white/10 border border-white/10 p-6 backdrop-blur"><div class="text-3xl font-bold">{site.stats.longterm}</div><div class="text-sm text-slate-300 mt-2">长期托管</div></div>
+      </div>
     </div>
   </section>
 
-  <!-- Content -->
-  <section class="py-20">
-    <div class="max-w-3xl mx-auto px-6">
-      <!-- Intro -->
-      <div class="mb-12">
-        <h2 class="text-2xl font-bold mb-4">公司简介</h2>
-        <p class="text-slate-500 leading-loose">
-          滇码科技成立于2011年，立足于云南省红河州，专注于互联网应用技术开发业务，是首批从事微信开发的服务商。已为多家政府、事业单位、企业完成网站、微信公众号、微信小程序、APP、网络平台、政府内网等技术服务。
-        </p>
-        <p class="text-slate-500 leading-loose mt-3">
-          我们是一家专业从事网络技术开发、销售、培训、运营、策划推广为一体的网络公司，同时具备集网络应用开发、网站建设、电子商务运营等多重开发实力于一身的新锐互联网企业。
-        </p>
+  <section class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-[0.8fr_1.2fr] gap-14">
+      <div>
+        <div class="section-overline">我们是谁</div>
+        <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-6">不是简单做页面，而是帮企业搭建能长期运行的技术底座</h2>
       </div>
+      <div class="space-y-5 text-slate-500 leading-loose text-lg">
+        <p>滇码科技立足云南红河蒙自，专注企业互联网应用开发。我们服务过政府、事业单位、本地企业、协会组织、食品企业、教育培训等不同类型客户，理解本地企业在预算、上线周期、内容维护和长期运维上的真实需求。</p>
+        <p>相比一次性交付模板站，我们更关注项目上线后的持续价值：内容是否方便维护、客户是否容易咨询、页面是否利于搜索收录、系统是否稳定、后续是否能继续扩展。</p>
+        <p>现在，我们把官网建设、小程序开发、APP 开发、业务系统定制、管理后台、Blob 媒体存储和 EdgeOne 部署整合在一起，为企业提供更完整的一站式软件开发服务。</p>
+      </div>
+    </div>
+  </section>
 
-      <!-- Advantages -->
-      <div class="mb-12">
-        <h2 class="text-2xl font-bold mb-4">我们的优势</h2>
-        <div class="feature-item">
-          <div class="feature-icon">🎯</div>
-          <div>
-            <h4 class="font-semibold text-sm mb-1">专业团队</h4>
-            <p class="text-sm text-slate-500">拥有一支技术超群、个性张扬的专业人才，时刻走在技术前沿，跟踪IT科技发展趋势。</p>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">🏆</div>
-          <div>
-            <h4 class="font-semibold text-sm mb-1">丰富经验</h4>
-            <p class="text-sm text-slate-500">7年云南本地网络公司团队，400多家客户、15个集团公司、12个政府机构服务经验。</p>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">💡</div>
-          <div>
-            <h4 class="font-semibold text-sm mb-1">创意设计</h4>
-            <p class="text-sm text-slate-500">不仅仅会设计网站，更会策划网站。懂品牌的重要，更懂客户的需求。</p>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">🤝</div>
-          <div>
-            <h4 class="font-semibold text-sm mb-1">诚信服务</h4>
-            <p class="text-sm text-slate-500">秉承"想您所想 如你所愿"的服务理念，无行业潜规则，为客户着想。</p>
-          </div>
-        </div>
+  <section class="py-24 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="max-w-3xl mb-12">
+        <div class="section-overline">我们的坚持</div>
+        <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-5">用产品思维做项目，用长期服务做口碑</h2>
+        <p class="text-slate-500 text-lg">我们希望每一次合作都能让客户清楚知道：为什么这样做、做到什么程度、上线后如何继续增长。</p>
       </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          ['需求先行', '先理解业务目标和客户路径，再决定页面、功能和技术方案。'],
+          ['可维护', '官网内容、图片、案例、服务尽量后台化，减少后期依赖开发人员。'],
+          ['重体验', '关注首屏表达、移动端体验、性能速度和咨询转化。'],
+          ['长期运维', '上线不是结束，后续安全、备份、优化和内容迭代同样重要。'],
+        ].map(([title, desc]) => (
+          <div class="rounded-3xl bg-white border border-slate-200 p-7 shadow-sm">
+            <h3 class="font-semibold text-xl mb-3">{title}</h3>
+            <p class="text-sm text-slate-500 leading-relaxed">{desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
 
-      <!-- CTA -->
-      <div class="bg-slate-50 rounded-2xl p-8 text-center">
-        <h3 class="text-lg font-bold mb-2">准备好合作了吗？</h3>
-        <p class="text-slate-500 mb-5">欢迎广大新老客户来电洽谈</p>
-        <a href="/contact/" class="btn btn-primary">联系我们 →</a>
-      </div>
+  <section class="py-24 bg-gradient-to-r from-primary to-primary-dark text-white text-center">
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="text-3xl md:text-5xl font-bold mb-6 text-white">如果你想认真做一个长期有用的网站或系统</h2>
+      <p class="text-lg opacity-85 mb-9">欢迎先把你的业务、目标和预算告诉我们，我们会给出更适合当前阶段的建设方案。</p>
+      <a href="/contact/" class="btn btn-white">预约项目咨询 →</a>
     </div>
   </section>
 </Base>

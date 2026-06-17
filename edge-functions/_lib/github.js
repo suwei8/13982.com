@@ -1,4 +1,8 @@
-const GIT_API = 'https://gitee.com/api/v5';
+const DEFAULT_GITEE_API_BASE = 'https://gitee.com/api/v5';
+
+function getApiBase(env) {
+  return (env.GITEE_API_BASE || DEFAULT_GITEE_API_BASE).replace(/\/$/, '');
+}
 
 function getHeaders(env) {
   return {
@@ -18,7 +22,7 @@ function getBranch(env) {
 export async function listDir(dirPath, env) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(dirPath);
-  const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
+  const url = `${getApiBase(env)}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
   const res = await fetch(url, { headers: getHeaders(env) });
   if (res.status === 404) return [];
   if (!res.ok) {
@@ -31,7 +35,7 @@ export async function listDir(dirPath, env) {
 export async function getFile(filePath, env) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(filePath);
-  const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
+  const url = `${getApiBase(env)}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${getBranch(env)}`;
   const res = await fetch(url, { headers: getHeaders(env) });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -63,7 +67,7 @@ function formatApiError(err, fallback) {
 async function writeFile(filePath, base64Content, message, env, sha) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(filePath);
-  const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
+  const url = `${getApiBase(env)}/repos/${owner}/${repo}/contents/${encodedPath}`;
   const body = {
     message,
     content: base64Content,
@@ -71,7 +75,7 @@ async function writeFile(filePath, base64Content, message, env, sha) {
   };
   if (sha) body.sha = sha;
   const res = await fetch(url, {
-    method: 'PUT',
+    method: sha ? 'PUT' : 'POST',
     headers: getHeaders(env),
     body: JSON.stringify(body),
   });
@@ -93,7 +97,7 @@ export async function putFileBase64(filePath, base64Content, message, env, sha) 
 export async function deleteFile(filePath, sha, message, env) {
   const { owner, repo } = getOwnerRepo(env);
   const encodedPath = encodeURIComponent(filePath);
-  const url = `${GIT_API}/repos/${owner}/${repo}/contents/${encodedPath}`;
+  const url = `${getApiBase(env)}/repos/${owner}/${repo}/contents/${encodedPath}`;
   const res = await fetch(url, {
     method: 'DELETE',
     headers: getHeaders(env),

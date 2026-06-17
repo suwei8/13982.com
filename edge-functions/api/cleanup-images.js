@@ -1,5 +1,5 @@
-import { json, error } from '../../_lib/response.js';
-import { listDir, getFile, deleteFile } from '../../_lib/github.js';
+import { json, error } from '../_lib/response.js';
+import { listDir, getFile, deleteFile } from '../_lib/github.js';
 
 export async function onRequestGet(context) {
   const { env } = context;

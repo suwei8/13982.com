@@ -11,10 +11,10 @@ const PASS = 'correct-horse-battery-staple';
 const PASS_HASH = await hmacSign(PASS, SECRET);
 
 const env = {
-  GITHUB_TOKEN: 'fake-token',
-  GITHUB_OWNER: 'suwei8',
-  GITHUB_REPO: '13982.com',
-  GITHUB_BRANCH: 'main',
+  GITEE_TOKEN: 'fake-token',
+  GITEE_OWNER: 'suwei8',
+  GITEE_REPO: '13982.com',
+  GITEE_BRANCH: 'master',
   ADMIN_USER: 'admin',
   ADMIN_PASS_HASH: PASS_HASH,
   SESSION_SECRET: SECRET,
@@ -58,4 +58,53 @@ test('site: 无 token 时返回 401', async () => {
   const req = new Request('https://x/api/site');
   const res = await siteMod.onRequestGet({ request: req, env, params: {} });
   assert.equal(res.status, 401);
+});
+
+
+test('edge functions: all API modules can be imported', async () => {
+  const modules = [
+    '../api/cleanup-images.js',
+    '../api/content/index.js',
+    '../api/content/item.js',
+    '../api/login.js',
+    '../api/media.js',
+    '../api/site.js',
+    '../api/test-ping.js',
+    '../api/upload.js',
+    '../api/uploads.js',
+    '../media/[[default]].js',
+  ];
+  for (const modulePath of modules) {
+    const mod = await import(modulePath);
+    assert.ok(Object.keys(mod).length > 0, `${modulePath} should export handlers`);
+  }
+});
+
+
+test('github client: creates new files with POST and updates existing files with PUT', async () => {
+  const { putFile, putFileBase64 } = await import('../_lib/github.js');
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url: String(url), init, body: JSON.parse(init.body) });
+    return new Response(JSON.stringify({ content: { sha: 'new-sha' } }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+
+  try {
+    await putFile('src/content/cases/new.md', 'hello', 'create text', { ...env, GITEE_API_BASE: 'https://gitee.example/api/v5/' });
+    await putFile('src/content/cases/existing.md', 'hello', 'update text', env, 'old-sha');
+    await putFileBase64('public/images/uploads/a.png', 'aGVsbG8=', 'create image', env);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(calls[0].init.method, 'POST');
+  assert.ok(calls[0].url.startsWith('https://gitee.example/api/v5/repos/'));
+  assert.equal(calls[1].init.method, 'PUT');
+  assert.equal(calls[1].body.sha, 'old-sha');
+  assert.equal(calls[2].init.method, 'POST');
+  assert.equal(calls[2].body.content, 'aGVsbG8=');
 });

@@ -1,6 +1,33 @@
 import { authenticate } from '../_lib/auth.js';
-import { putFile } from '../_lib/github.js';
+import { putFileBase64 } from '../_lib/github.js';
 import { json, error } from '../_lib/response.js';
+
+const DEFAULT_UPLOAD_DIR = 'public/images/uploads';
+const DEFAULT_UPLOAD_URL_PREFIX = '/images/uploads';
+const DEFAULT_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
+const DEFAULT_UPLOAD_ALLOWED_EXTS = 'png,jpg,jpeg,gif,webp,svg';
+
+function cleanPathPart(value, fallback) {
+  return String(value || fallback).replace(/^\/+|\/+$/g, '');
+}
+
+function cleanUrlPrefix(value, fallback) {
+  const cleaned = String(value || fallback).replace(/\/+$/g, '');
+  return cleaned.startsWith('/') ? cleaned : `/${cleaned}`;
+}
+
+function getUploadConfig(env) {
+  const maxBytes = Number.parseInt(env.UPLOAD_MAX_BYTES || '', 10);
+  return {
+    dir: cleanPathPart(env.UPLOAD_DIR, DEFAULT_UPLOAD_DIR),
+    urlPrefix: cleanUrlPrefix(env.UPLOAD_URL_PREFIX, DEFAULT_UPLOAD_URL_PREFIX),
+    maxBytes: Number.isFinite(maxBytes) && maxBytes > 0 ? maxBytes : DEFAULT_UPLOAD_MAX_BYTES,
+    allowedExts: new Set(String(env.UPLOAD_ALLOWED_EXTS || DEFAULT_UPLOAD_ALLOWED_EXTS)
+      .split(',')
+      .map((ext) => ext.trim().toLowerCase().replace(/^\./, ''))
+      .filter(Boolean)),
+  };
+}
 
 // Convert an ArrayBuffer/Uint8Array to base64 in 32 KiB chunks to avoid
 // O(n^2) string concat from String.fromCharCode in a tight loop.
@@ -37,9 +64,18 @@ export async function onRequestPost(context) {
     return error('Missing "file" field');
   }
 
-  const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
-  const timestamp = Date.now();
-  const uploadPath = `public/images/uploads/${timestamp}.${ext}`;
+  const uploadConfig = getUploadConfig(env);
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (!uploadConfig.allowedExts.has(ext)) {
+    return error(`Unsupported file type. Allowed: ${Array.from(uploadConfig.allowedExts).join(', ')}`);
+  }
+  if (file.size > uploadConfig.maxBytes) {
+    return error(`File exceeds ${uploadConfig.maxBytes} bytes limit`);
+  }
+
+  const random = crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 16) : String(Date.now());
+  const filename = `${random}.${ext}`;
+  const uploadPath = `${uploadConfig.dir}/${filename}`;
 
   let arrayBuffer;
   try {
@@ -51,7 +87,7 @@ export async function onRequestPost(context) {
   const base64 = bytesToBase64(arrayBuffer);
 
   try {
-    const result = await putFile(
+    const result = await putFileBase64(
       uploadPath,
       base64,
       `admin: upload image ${file.name}`,
@@ -60,7 +96,7 @@ export async function onRequestPost(context) {
     return json({
       success: true,
       path: uploadPath,
-      url: `/images/uploads/${timestamp}.${ext}`,
+      url: `${uploadConfig.urlPrefix}/${filename}`,
       name: file.name,
       sha: result.content?.sha,
     });

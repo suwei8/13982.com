@@ -26,9 +26,9 @@ const { title, description = site.description, activeNav = '' } = Astro.props;
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 right-0 z-50 h-[72px] bg-white/90 backdrop-blur-xl border-b border-slate-200 transition-shadow duration-300" id="nav">
       <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-full">
-        <a class="text-xl font-bold text-slate-900 flex items-center gap-2 no-underline hover:text-slate-900" href="/">
-          <img src={site.logo || '/media/uploads/872cb4b5f20a4bd8.png'} alt={`${site.name} logo`} class="w-7 h-7 rounded-lg object-cover" />
-          {site.name}
+        <a class="text-xl font-bold text-slate-900 flex items-center gap-2 no-underline hover:text-slate-900" href="/" aria-label={site.name}>
+          <img src={site.logo || '/media/uploads/872cb4b5f20a4bd8.png'} alt={site.name} class="h-9 w-auto max-w-[150px] object-contain" />
+          <span class="sr-only">{site.name}</span>
         </a>
         <button class="nav-toggle" id="navToggle" aria-label="菜单">
           <span></span><span></span><span></span>

@@ -67,6 +67,7 @@ test('edge functions: all API modules can be imported', async () => {
     '../api/content/index.js',
     '../api/content/item.js',
     '../api/login.js',
+    '../api/media.js',
     '../api/site.js',
     '../api/test-ping.js',
     '../api/upload.js',

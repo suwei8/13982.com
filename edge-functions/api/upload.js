@@ -1,11 +1,13 @@
 import { authenticate } from '../_lib/auth.js';
 import { putFileBase64 } from '../_lib/github.js';
+import { getBlobKey, putBlob } from '../_lib/blob.js';
 import { json, error } from '../_lib/response.js';
 
 const DEFAULT_UPLOAD_DIR = 'public/images/uploads';
 const DEFAULT_UPLOAD_URL_PREFIX = '/images/uploads';
 const DEFAULT_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 const DEFAULT_UPLOAD_ALLOWED_EXTS = 'png,jpg,jpeg,gif,webp,svg';
+const DEFAULT_UPLOAD_STORAGE = 'gitee';
 
 function cleanPathPart(value, fallback) {
   return String(value || fallback).replace(/^\/+|\/+$/g, '');
@@ -22,6 +24,7 @@ function getUploadConfig(env) {
     dir: cleanPathPart(env.UPLOAD_DIR, DEFAULT_UPLOAD_DIR),
     urlPrefix: cleanUrlPrefix(env.UPLOAD_URL_PREFIX, DEFAULT_UPLOAD_URL_PREFIX),
     maxBytes: Number.isFinite(maxBytes) && maxBytes > 0 ? maxBytes : DEFAULT_UPLOAD_MAX_BYTES,
+    storage: String(env.UPLOAD_STORAGE || DEFAULT_UPLOAD_STORAGE).toLowerCase(),
     allowedExts: new Set(String(env.UPLOAD_ALLOWED_EXTS || DEFAULT_UPLOAD_ALLOWED_EXTS)
       .split(',')
       .map((ext) => ext.trim().toLowerCase().replace(/^\./, ''))
@@ -76,6 +79,7 @@ export async function onRequestPost(context) {
   const random = crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 16) : String(Date.now());
   const filename = `${random}.${ext}`;
   const uploadPath = `${uploadConfig.dir}/${filename}`;
+  const blobKey = getBlobKey(env, filename);
 
   let arrayBuffer;
   try {
@@ -84,9 +88,20 @@ export async function onRequestPost(context) {
     return error('Failed to read file');
   }
 
-  const base64 = bytesToBase64(arrayBuffer);
-
   try {
+    if (uploadConfig.storage === 'blob') {
+      await putBlob(env, blobKey, arrayBuffer);
+      return json({
+        success: true,
+        storage: 'blob',
+        key: blobKey,
+        path: blobKey,
+        url: `/api/media?key=${encodeURIComponent(blobKey)}`,
+        name: file.name,
+      });
+    }
+
+    const base64 = bytesToBase64(arrayBuffer);
     const result = await putFileBase64(
       uploadPath,
       base64,
@@ -95,6 +110,7 @@ export async function onRequestPost(context) {
     );
     return json({
       success: true,
+      storage: 'gitee',
       path: uploadPath,
       url: `${uploadConfig.urlPrefix}/${filename}`,
       name: file.name,

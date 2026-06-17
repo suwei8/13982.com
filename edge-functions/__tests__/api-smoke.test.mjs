@@ -71,6 +71,8 @@ test('edge functions: all API modules can be imported', async () => {
     '../api/site.js',
     '../api/test-ping.js',
     '../api/upload.js',
+    '../api/uploads.js',
+    '../media/[[default]].js',
   ];
   for (const modulePath of modules) {
     const mod = await import(modulePath);

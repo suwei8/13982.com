@@ -42,3 +42,22 @@ export async function getBlob(env, key) {
   const store = getStore(storeName);
   return store.get(key, { type: 'arrayBuffer', consistency: readConsistency });
 }
+
+
+export function getMediaUrl(key) {
+  return `/media/${key.split('/').map(encodeURIComponent).join('/')}`;
+}
+
+export async function listBlobs(env) {
+  const { storeName, prefix, readConsistency } = getBlobConfig(env);
+  const getStore = await getStoreFactory();
+  const store = getStore(storeName);
+  return store.list({ prefix: `${prefix}/`, consistency: readConsistency });
+}
+
+export async function deleteBlob(env, key) {
+  const { storeName } = getBlobConfig(env);
+  const getStore = await getStoreFactory();
+  const store = getStore(storeName);
+  await store.delete(key);
+}

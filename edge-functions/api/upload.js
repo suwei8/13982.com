@@ -1,6 +1,6 @@
 import { authenticate } from '../_lib/auth.js';
 import { putFileBase64 } from '../_lib/github.js';
-import { getBlobKey, putBlob } from '../_lib/blob.js';
+import { getBlobKey, getMediaUrl, putBlob } from '../_lib/blob.js';
 import { json, error } from '../_lib/response.js';
 
 const DEFAULT_UPLOAD_DIR = 'public/images/uploads';
@@ -96,7 +96,7 @@ export async function onRequestPost(context) {
         storage: 'blob',
         key: blobKey,
         path: blobKey,
-        url: `/api/media?key=${encodeURIComponent(blobKey)}`,
+        url: getMediaUrl(blobKey),
         name: file.name,
       });
     }

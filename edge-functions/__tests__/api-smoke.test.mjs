@@ -59,3 +59,20 @@ test('site: 无 token 时返回 401', async () => {
   const res = await siteMod.onRequestGet({ request: req, env, params: {} });
   assert.equal(res.status, 401);
 });
+
+
+test('edge functions: all API modules can be imported', async () => {
+  const modules = [
+    '../api/cleanup-images.js',
+    '../api/content/index.js',
+    '../api/content/item.js',
+    '../api/login.js',
+    '../api/site.js',
+    '../api/test-ping.js',
+    '../api/upload.js',
+  ];
+  for (const modulePath of modules) {
+    const mod = await import(modulePath);
+    assert.ok(Object.keys(mod).length > 0, `${modulePath} should export handlers`);
+  }
+});

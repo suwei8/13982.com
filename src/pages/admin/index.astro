@@ -103,6 +103,8 @@
       }
       .form-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
       .form-input:disabled { background: #f1f5f9; }
+      .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .form-grid .full { grid-column: 1 / -1; }
       textarea.form-input { resize: vertical; min-height: 80px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
       .form-hint { font-size: 11px; color: #94a3b8; margin-top: 4px; }
       .login-err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; display: none; }
@@ -154,6 +156,7 @@
         .nav-item span:not(.nav-icon) { display: none; }
         .topbar { padding: 0 14px; }
         .content { padding: 14px; }
+        .form-grid { grid-template-columns: 1fr; }
         .table th, .table td { padding: 10px 8px; }
         .table .col-hide-sm { display: none; }
       }
@@ -185,6 +188,7 @@
         services: [],
         site: { sha: null, raw: '' },
         uploads: [],
+        uploadsLoaded: false,
       };
 
       // ===== 工具 =====
@@ -293,6 +297,11 @@
         return api('/api/upload', { method: 'POST', body: fd });
       };
 
+      const apiUploads = {
+        list: () => api('/api/uploads'),
+        remove: (key) => api(`/api/uploads?key=${encodeURIComponent(key)}`, { method: 'DELETE' }),
+      };
+
       // ===== 鉴权 =====
       function setSession(token, user) {
         state.token = token;
@@ -372,14 +381,14 @@
           el('nav', { class: 'sidebar-nav' },
             navItem('cases', '案例', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h18"/></svg>'),
             navItem('services', '服务', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'),
-            navItem('site', '站点信息', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"/></svg>'),
+            navItem('site', '站点配置', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"/></svg>'),
             navItem('upload', '图片上传', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'),
             navItem('cleanup', '图片清理', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'),
           ),
           el('div', { class: 'sidebar-foot' }, '© 滇码科技')
         );
 
-        const titles = { cases: '客户案例', services: '产品服务', site: '站点信息', upload: '图片上传', cleanup: '图片清理' };
+        const titles = { cases: '客户案例', services: '产品服务', site: '站点配置', upload: '图片上传', cleanup: '图片清理' };
         const logoutBtn = el('button', { onclick: () => logout() }, '退出登录');
         const topbar = el('div', { class: 'topbar' },
           el('div', { class: 'topbar-title' }, titles[state.activeTab] || ''),
@@ -711,26 +720,93 @@
         } catch (e) { toast(`删除失败：${e.message}`, 'error'); }
       }
 
-      // ===== 站点信息 =====
+      // ===== 站点配置 =====
+      const siteFields = [
+        ['name', '站点名称', '滇码科技'],
+        ['logo', 'Logo URL', '/media/uploads/872cb4b5f20a4bd8.png'],
+        ['slogan', '品牌口号', '用技术把业务跑起来'],
+        ['description', '站点描述', '用于首页、页脚与 SEO 描述'],
+        ['phone_mobile', '联系电话', '16687180373'],
+        ['phone_400', '页脚联系电话', '16687180373'],
+        ['wechat', '微信号', '16687180373'],
+        ['wechat_qr', '微信二维码 URL', '/media/uploads/25c0326aa3254661.png'],
+        ['email', '邮箱（内部留存）', 'sw@sw586.com'],
+        ['company', '公司/主体名称', '蒙自市滇码网络服务中心'],
+        ['address', '城市地址', '云南省红河州蒙自市'],
+        ['address_full', '详细地址', '详细经营地址'],
+        ['icp', 'ICP备案号', '滇ICP备2024030568号-1'],
+      ];
+
+      function parseSiteData() {
+        try { return state.site.raw ? JSON.parse(state.site.raw) : {}; }
+        catch { return {}; }
+      }
+
       function renderSitePanel() {
         const wrap = el('div');
         const head = el('div', { class: 'panel-header' },
           el('div', {},
-            el('div', { class: 'panel-title' }, '站点信息'),
-            el('div', { class: 'panel-sub' }, '对应 src/content/site.json · 修改后立即生效')
+            el('div', { class: 'panel-title' }, '站点配置'),
+            el('div', { class: 'panel-sub' }, '表单化管理 src/content/site.json · 保存后触发重新部署生效')
           )
         );
 
-        const ta = el('textarea', { class: 'form-input', style: { minHeight: '420px' }, id: 'siteTa' }, state.site.raw || '');
-        const loadBtn = el('button', { class: 'btn btn-secondary', onclick: loadSite }, '↻ 重新加载');
-        const saveBtn = el('button', { class: 'btn btn-primary', onclick: saveSite }, '保存');
-        const foot = el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '12px' } }, loadBtn, saveBtn);
+        const data = parseSiteData();
+        const form = el('form', { class: 'form-grid' });
+        const inputs = {};
+        for (const [key, label, placeholder] of siteFields) {
+          const isLong = ['description', 'address_full'].includes(key);
+          const input = isLong
+            ? el('textarea', { class: 'form-input', placeholder }, data[key] || '')
+            : el('input', { class: 'form-input', type: 'text', value: data[key] || '', placeholder });
+          inputs[key] = input;
+          const field = mkField(label, input, ['name', 'phone_mobile', 'wechat'].includes(key));
+          if (isLong || ['description', 'address_full'].includes(key)) field.classList.add('full');
+          form.appendChild(field);
+        }
+
+        const stats = data.stats || {};
+        const years = el('input', { class: 'form-input', type: 'text', value: stats.years || '', placeholder: '7年' });
+        const clients = el('input', { class: 'form-input', type: 'text', value: stats.clients || '', placeholder: '400+' });
+        const longterm = el('input', { class: 'form-input', type: 'text', value: stats.longterm || '', placeholder: '47' });
+        form.append(
+          mkField('服务年限', years),
+          mkField('客户数量', clients),
+          mkField('长期托管客户', longterm),
+        );
+
+        const err = el('div', { class: 'err-text', id: 'siteErr' });
+        const loadBtn = el('button', { class: 'btn btn-secondary', type: 'button', onclick: loadSite }, '↻ 重新加载');
+        const jsonBtn = el('button', { class: 'btn btn-ghost', type: 'button', onclick: () => showModal({
+          title: '当前 JSON',
+          body: el('textarea', { class: 'form-input', style: { minHeight: '420px' }, readonly: true }, JSON.stringify(parseSiteData(), null, 2)),
+          foot: el('button', { class: 'btn btn-secondary', onclick: () => $('#modalBg').classList.remove('show') }, '关闭')
+        }) }, '查看 JSON');
+        const saveBtn = el('button', { class: 'btn btn-primary', type: 'submit' }, '保存配置');
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const next = { ...parseSiteData() };
+          for (const [key] of siteFields) next[key] = inputs[key].value.trim();
+          next.stats = {
+            years: years.value.trim(),
+            clients: clients.value.trim(),
+            longterm: longterm.value.trim(),
+          };
+          if (!next.name || !next.phone_mobile || !next.wechat) {
+            err.textContent = '站点名称、联系电话、微信号为必填项';
+            return;
+          }
+          err.textContent = '';
+          saveBtn.disabled = true; saveBtn.textContent = '保存中...';
+          try { await saveSiteData(next); }
+          finally { saveBtn.disabled = false; saveBtn.textContent = '保存配置'; }
+        });
 
         const card = el('div', { class: 'card', style: { padding: '20px' } },
-          el('div', { class: 'helper' }, '直接编辑 JSON 文本，保存时会校验合法性。'),
-          ta,
-          el('div', { class: 'err-text', id: 'siteErr' }),
-          foot
+          el('div', { class: 'helper', style: { marginBottom: '14px' } }, '常用站点字段已改为表单填写，避免直接编辑 JSON 出错。'),
+          form,
+          err,
+          el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' } }, loadBtn, jsonBtn, saveBtn)
         );
 
         wrap.append(head, card);
@@ -744,19 +820,13 @@
           state.site.sha = r.sha;
           state.site.raw = JSON.stringify(r.data, null, 2);
           renderShell();
-        } catch (e) { toast(`加载站点信息失败：${e.message}`, 'error'); }
+        } catch (e) { toast(`加载站点配置失败：${e.message}`, 'error'); }
       }
 
-      async function saveSite() {
-        const ta = $('#siteTa');
-        const err = $('#siteErr');
-        let data;
-        try { data = JSON.parse(ta.value); }
-        catch (e) { err.textContent = 'JSON 解析失败：' + e.message; return; }
-        err.textContent = '';
+      async function saveSiteData(data) {
         try {
           await apiSite.save(data, state.site.sha);
-          toast('已保存，30-60 秒后线上生效', 'success');
+          toast('站点配置已保存，30-60 秒后线上生效', 'success');
           await loadSite();
         } catch (e) { toast(`保存失败：${e.message}`, 'error'); }
       }
@@ -764,11 +834,13 @@
       // ===== 图片上传 =====
       function renderUploadPanel() {
         const wrap = el('div');
+        const refreshBtn = el('button', { class: 'btn btn-secondary btn-sm', onclick: loadUploads }, '↻ 刷新图片');
         const head = el('div', { class: 'panel-header' },
           el('div', {},
             el('div', { class: 'panel-title' }, '图片上传'),
-            el('div', { class: 'panel-sub' }, '支持 png / jpg / jpeg / gif / webp / svg，上传后可在 case / service 表单里引用 URL')
-          )
+            el('div', { class: 'panel-sub' }, '支持 png / jpg / jpeg / gif / webp / svg，上传后立即生成可引用 URL')
+          ),
+          el('div', { style: { display: 'flex', gap: '8px' } }, refreshBtn)
         );
 
         const fileInput = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/jpg,image/gif,image/webp,image/svg+xml' });
@@ -779,7 +851,6 @@
           el('div', { style: { display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center', flexWrap: 'wrap' } }, fileInput, uploadBtn),
           errBox
         );
-        // 拖拽高亮
         ['dragenter', 'dragover'].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.add('drag'); }));
         ['dragleave', 'drop'].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.remove('drag'); }));
         zone.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) { fileInput.files = e.dataTransfer.files; } });
@@ -788,15 +859,18 @@
         const renderList = () => {
           list.innerHTML = '';
           if (state.uploads.length === 0) {
-            list.appendChild(el('div', { class: 'empty', style: { gridColumn: '1 / -1' } }, '本次会话上传记录'));
+            list.appendChild(el('div', { class: 'empty', style: { gridColumn: '1 / -1' } }, state.uploadsLoaded ? '暂无历史图片' : '正在加载历史图片...'));
             return;
           }
           for (const u of state.uploads) {
             const urlInput = el('input', { type: 'text', value: u.url, readonly: true });
             const copyBtn = el('button', { class: 'btn btn-secondary btn-sm', onclick: () => copyToClipboard(u.url) }, '复制');
+            const deleteBtn = el('button', { class: 'btn btn-danger btn-sm', onclick: () => deleteUpload(u) }, '删除');
             list.appendChild(el('div', { class: 'upload-item' },
-              el('div', { style: { fontSize: '12px', color: '#475569', marginBottom: '6px' } }, u.name),
-              el('div', { class: 'url-row' }, urlInput, copyBtn)
+              el('img', { src: u.url, alt: u.name || '', style: { width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '8px', background: '#f8fafc' } }),
+              el('div', { style: { fontSize: '12px', color: '#475569', marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, u.name || u.key || u.path),
+              el('div', { class: 'url-row' }, urlInput, copyBtn),
+              el('div', { style: { marginTop: '8px', display: 'flex', justifyContent: 'flex-end' } }, deleteBtn)
             ));
           }
         };
@@ -811,15 +885,40 @@
           try {
             const r = await apiUpload(f);
             toast('上传成功', 'success');
-            state.uploads.unshift({ name: f.name, url: r.url, path: r.path });
+            state.uploads.unshift({ name: f.name, url: r.url, path: r.path, key: r.key });
             fileInput.value = '';
+            state.uploadsLoaded = true;
             renderList();
           } catch (e) { errBox.textContent = '上传失败：' + e.message; }
           finally { uploadBtn.disabled = false; uploadBtn.textContent = '上传'; }
         }
 
+        async function deleteUpload(item) {
+          const key = item.key || item.path;
+          if (!key) { toast('缺少图片 key，无法删除', 'error'); return; }
+          if (!confirm(`确认删除图片「${item.name || key}」？
+URL：${item.url}
+此操作会从 Blob 存储中删除。`)) return;
+          try {
+            await apiUploads.remove(key);
+            state.uploads = state.uploads.filter((u) => (u.key || u.path) !== key);
+            toast('图片已删除', 'success');
+            renderList();
+          } catch (e) { toast('删除失败：' + e.message, 'error'); }
+        }
+
         wrap.append(head, zone, list);
+        if (!state.uploadsLoaded) loadUploads().then(renderList);
         return wrap;
+      }
+
+      async function loadUploads() {
+        try {
+          const r = await apiUploads.list();
+          state.uploads = r.items || [];
+          state.uploadsLoaded = true;
+          renderShell();
+        } catch (e) { toast('加载图片列表失败：' + e.message, 'error'); state.uploadsLoaded = true; }
       }
 
       function copyToClipboard(text) {

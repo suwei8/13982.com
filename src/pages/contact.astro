@@ -3,16 +3,14 @@ import Base from '../layouts/Base.astro';
 import site from '../content/site.json';
 ---
 
-<Base title="联系我们" activeNav="contact">
-  <!-- Page Header -->
-  <section class="pt-[calc(72px+48px)] pb-12 bg-gradient-to-br from-blue-50 to-sky-50 text-center">
+<Base title="联系我们" activeNav="contact" description="联系滇码科技，获取企业官网、小程序、APP、业务系统与云部署运维咨询。">
+  <section class="pt-[calc(72px+64px)] pb-16 bg-gradient-to-br from-blue-50 to-sky-50 text-center">
     <div class="max-w-7xl mx-auto px-6">
-      <h1 class="text-3xl font-bold mb-2">联系我们</h1>
-      <p class="text-slate-500">一个微信、一个电话，开启一个项目的合作</p>
+      <h1 class="text-4xl font-bold mb-3">联系我们</h1>
+      <p class="text-slate-500">一个微信、一个电话，开启一次靠谱的软件项目合作</p>
     </div>
   </section>
 
-  <!-- Contact Cards -->
   <section class="py-20">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -24,27 +22,26 @@ import site from '../content/site.json';
         <div class="contact-card">
           <div class="contact-icon bg-green-100 text-green-600">📞</div>
           <h3 class="font-semibold text-sm mb-2">联系电话</h3>
-          <p class="text-sm text-slate-500">网站建设: {site.phone_mobile}</p>
-          <p class="text-sm text-slate-500">网站优化: {site.phone_400}</p>
+          <p class="text-sm text-slate-500">项目咨询：<a href={`tel:${site.phone_mobile}`} class="text-primary hover:underline">{site.phone_mobile}</a></p>
+          <p class="text-sm text-slate-500">微信同号，建议先加微信沟通需求</p>
         </div>
         <div class="contact-card">
           <div class="contact-icon bg-amber-100 text-amber-600">💬</div>
           <h3 class="font-semibold text-sm mb-2">微信联系</h3>
-          <p class="text-sm text-slate-500">微信号: {site.wechat}</p>
-          <p class="text-sm text-slate-500">扫码添加好友</p>
+          <p class="text-sm text-slate-500">微信号：{site.wechat}</p>
+          <p class="text-sm text-slate-500">扫码添加好友，发送项目需求</p>
         </div>
         <div class="contact-card">
-          <div class="contact-icon bg-pink-100 text-pink-600">📧</div>
-          <h3 class="font-semibold text-sm mb-2">电子邮箱</h3>
-          <p class="text-sm text-slate-500"><a href={`mailto:${site.email}`} class="text-primary hover:underline">{site.email}</a></p>
+          <div class="contact-icon bg-pink-100 text-pink-600">▣</div>
+          <h3 class="font-semibold text-sm mb-3">个人微信二维码</h3>
+          <img src={site.wechat_qr || '/media/uploads/25c0326aa3254661.png'} alt="滇码科技个人微信二维码" class="w-28 h-28 object-cover rounded-xl mx-auto border border-slate-200" />
         </div>
       </div>
 
-      <!-- Work hours -->
-      <div class="bg-slate-50 rounded-2xl p-10 text-center">
-        <h2 class="text-2xl font-bold mb-3">工作时间</h2>
-        <p class="text-lg text-slate-500">周一至周五 08:00 - 18:00</p>
-        <p class="text-sm text-slate-400 mt-2">州内免费上门服务</p>
+      <div class="bg-slate-50 rounded-3xl p-10 text-center">
+        <h2 class="text-2xl font-bold mb-3">建议这样沟通更高效</h2>
+        <p class="text-lg text-slate-500">发送业务目标、参考网站、预算范围和期望上线时间</p>
+        <p class="text-sm text-slate-400 mt-2">我们会先帮你判断：适合官网、小程序、APP，还是业务系统定制。</p>
       </div>
     </div>
   </section>

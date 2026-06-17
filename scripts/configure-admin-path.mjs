@@ -18,8 +18,8 @@ if (normalized === '/admin') {
   process.exit(0);
 }
 
-if (!/^[a-zA-Z0-9][a-zA-Z0-9/_-]{2,80}$/.test(safeSegment) || safeSegment.includes('..')) {
-  throw new Error(`Invalid ADMIN_PATH: ${rawPath}. Use a path like /dm-console-2026`);
+if (!/^[a-zA-Z0-9][a-zA-Z0-9/_-]{1,80}$/.test(safeSegment) || safeSegment.includes('..')) {
+  throw new Error(`Invalid ADMIN_PATH: ${rawPath}. Use a path like /sw or /dm-console-2026`);
 }
 
 const targetDir = path.join(distDir, safeSegment);

@@ -23,7 +23,7 @@ export async function listDir(dirPath, env) {
   if (res.status === 404) return [];
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub API error: ${res.status}`);
+    throw new Error(err.message || `Gitee API error: ${res.status}`);
   }
   return res.json();
 }
@@ -35,7 +35,7 @@ export async function getFile(filePath, env) {
   const res = await fetch(url, { headers: getHeaders(env) });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub API error: ${res.status}`);
+    throw new Error(err.message || `Gitee API error: ${res.status}`);
   }
   const data = await res.json();
   return {
@@ -63,7 +63,7 @@ export async function putFile(filePath, content, message, env, sha) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub API error: ${res.status}`);
+    throw new Error(err.message || `Gitee API error: ${res.status}`);
   }
   return res.json();
 }
@@ -83,7 +83,7 @@ export async function deleteFile(filePath, sha, message, env) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub API error: ${res.status}`);
+    throw new Error(err.message || `Gitee API error: ${res.status}`);
   }
   return res.json();
 }

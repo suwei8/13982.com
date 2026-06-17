@@ -11,13 +11,12 @@ const services = (await getCollection('services')).sort(
 );
 
 const serviceIcons: Record<string, string> = {
-  '网站建设': '🌐', '小程序开发': '📱', '公众号开发': '💬',
-  'APP开发': '📲', '网络推广': '📈', '电商服务': '🛒',
-  '直播服务': '📡', '微信抽奖': '🎁',
-  'OA系统定制': '⚙️', '商城网站': '🏪',
-  '网站空间': '☁️',
-  'Logo设计': '🎨',
-  '运维服务': '🔧',
+  '企业官网建设': '🌐',
+  '小程序开发': '📱',
+  'APP开发': '📲',
+  '业务系统定制': '⚙️',
+  '管理后台与CMS': '🧩',
+  '云部署与运维': '☁️',
 };
 
 const coreServices = services.slice(0, 6);

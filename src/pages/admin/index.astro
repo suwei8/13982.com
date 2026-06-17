@@ -185,6 +185,7 @@
         services: [],
         site: { sha: null, raw: '' },
         uploads: [],
+        uploadsLoaded: false,
       };
 
       // ===== 工具 =====
@@ -291,6 +292,11 @@
         const fd = new FormData();
         fd.append('file', file);
         return api('/api/upload', { method: 'POST', body: fd });
+      };
+
+      const apiUploads = {
+        list: () => api('/api/uploads'),
+        remove: (key) => api(`/api/uploads?key=${encodeURIComponent(key)}`, { method: 'DELETE' }),
       };
 
       // ===== 鉴权 =====
@@ -764,11 +770,13 @@
       // ===== 图片上传 =====
       function renderUploadPanel() {
         const wrap = el('div');
+        const refreshBtn = el('button', { class: 'btn btn-secondary btn-sm', onclick: loadUploads }, '↻ 刷新图片');
         const head = el('div', { class: 'panel-header' },
           el('div', {},
             el('div', { class: 'panel-title' }, '图片上传'),
-            el('div', { class: 'panel-sub' }, '支持 png / jpg / jpeg / gif / webp / svg，上传后可在 case / service 表单里引用 URL')
-          )
+            el('div', { class: 'panel-sub' }, '支持 png / jpg / jpeg / gif / webp / svg，上传后立即生成可引用 URL')
+          ),
+          el('div', { style: { display: 'flex', gap: '8px' } }, refreshBtn)
         );
 
         const fileInput = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/jpg,image/gif,image/webp,image/svg+xml' });
@@ -779,7 +787,6 @@
           el('div', { style: { display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center', flexWrap: 'wrap' } }, fileInput, uploadBtn),
           errBox
         );
-        // 拖拽高亮
         ['dragenter', 'dragover'].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.add('drag'); }));
         ['dragleave', 'drop'].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.remove('drag'); }));
         zone.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) { fileInput.files = e.dataTransfer.files; } });
@@ -788,15 +795,18 @@
         const renderList = () => {
           list.innerHTML = '';
           if (state.uploads.length === 0) {
-            list.appendChild(el('div', { class: 'empty', style: { gridColumn: '1 / -1' } }, '本次会话上传记录'));
+            list.appendChild(el('div', { class: 'empty', style: { gridColumn: '1 / -1' } }, state.uploadsLoaded ? '暂无历史图片' : '正在加载历史图片...'));
             return;
           }
           for (const u of state.uploads) {
             const urlInput = el('input', { type: 'text', value: u.url, readonly: true });
             const copyBtn = el('button', { class: 'btn btn-secondary btn-sm', onclick: () => copyToClipboard(u.url) }, '复制');
+            const deleteBtn = el('button', { class: 'btn btn-danger btn-sm', onclick: () => deleteUpload(u) }, '删除');
             list.appendChild(el('div', { class: 'upload-item' },
-              el('div', { style: { fontSize: '12px', color: '#475569', marginBottom: '6px' } }, u.name),
-              el('div', { class: 'url-row' }, urlInput, copyBtn)
+              el('img', { src: u.url, alt: u.name || '', style: { width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '8px', background: '#f8fafc' } }),
+              el('div', { style: { fontSize: '12px', color: '#475569', marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, u.name || u.key || u.path),
+              el('div', { class: 'url-row' }, urlInput, copyBtn),
+              el('div', { style: { marginTop: '8px', display: 'flex', justifyContent: 'flex-end' } }, deleteBtn)
             ));
           }
         };
@@ -811,15 +821,40 @@
           try {
             const r = await apiUpload(f);
             toast('上传成功', 'success');
-            state.uploads.unshift({ name: f.name, url: r.url, path: r.path });
+            state.uploads.unshift({ name: f.name, url: r.url, path: r.path, key: r.key });
             fileInput.value = '';
+            state.uploadsLoaded = true;
             renderList();
           } catch (e) { errBox.textContent = '上传失败：' + e.message; }
           finally { uploadBtn.disabled = false; uploadBtn.textContent = '上传'; }
         }
 
+        async function deleteUpload(item) {
+          const key = item.key || item.path;
+          if (!key) { toast('缺少图片 key，无法删除', 'error'); return; }
+          if (!confirm(`确认删除图片「${item.name || key}」？
+URL：${item.url}
+此操作会从 Blob 存储中删除。`)) return;
+          try {
+            await apiUploads.remove(key);
+            state.uploads = state.uploads.filter((u) => (u.key || u.path) !== key);
+            toast('图片已删除', 'success');
+            renderList();
+          } catch (e) { toast('删除失败：' + e.message, 'error'); }
+        }
+
         wrap.append(head, zone, list);
+        if (!state.uploadsLoaded) loadUploads().then(renderList);
         return wrap;
+      }
+
+      async function loadUploads() {
+        try {
+          const r = await apiUploads.list();
+          state.uploads = r.items || [];
+          state.uploadsLoaded = true;
+          renderShell();
+        } catch (e) { toast('加载图片列表失败：' + e.message, 'error'); state.uploadsLoaded = true; }
       }
 
       function copyToClipboard(text) {
